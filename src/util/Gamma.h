@@ -7,17 +7,17 @@
 #include "HpFloat.h"
 #define GAMMA_PRECOMPUTE_FILE "gamma_precompute_values.inc"
 
-namespace cprior::math {
+namespace cprior::util {
 
 class Gamma {
 public:
     static constexpr int kCacheSize = 1024;
 
-    static double logLimit(double z);
+    static double lgammaLimit(double z);
 
-    static HpFloat logHalfInt(unsigned long n);
+    static HpFloat lgammaIntPlusHalf(unsigned long n);
 
-    static HpFloat logInt(unsigned long n);
+    static HpFloat lgammaInt(unsigned long n);
 
 
     static void writePrecomputeHeaderFile();

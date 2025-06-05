@@ -7,25 +7,25 @@
 #include <fstream>
 #include <cmath>
 
-namespace cprior::math {
+namespace cprior::util {
 
 
-double Gamma::logLimit(double z) {
+double Gamma::lgammaLimit(double z) {
     return (z - 0.5) * std::log(z) - z + std::log(2 * M_PI) / 2;
 }
 
-HpFloat Gamma::logHalfInt(unsigned long n) {
-    if (n <= kCacheSize - 1) {
+HpFloat Gamma::lgammaIntPlusHalf(unsigned long n) {
+    if (n < kCacheSize) {
         return precompute_n_1_2_[n];
     }
-    return logLimit(static_cast<double>(n) + 0.5);
+    return lgammaLimit(static_cast<double>(n) + 0.5);
 }
 
-HpFloat Gamma::logInt(unsigned long n) {
-    if (n <= kCacheSize - 1) {
+HpFloat Gamma::lgammaInt(unsigned long n) {
+    if (n < kCacheSize) {
         return precompute_n_0_[n];
     }
-    return logLimit(static_cast<double>(n));
+    return lgammaLimit(static_cast<double>(n));
 }
 
 void Gamma::writePrecomputeHeaderFile() {

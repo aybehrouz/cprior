@@ -1,39 +1,68 @@
 #include <cmath>
 #include <iostream>
+#include <regex>
 
-#include "src/math/Gamma.h"
-#include "src/multinomial/InferenceNode.h"
+#include "src/encoder/AttributeTuple.h"
+#include "src/multinomial/InferenceEngine.h"
+#include "src/multinomial/MockOutcome.h"
+#include "src/multinomial/Variable.h"
+#include "src/util/ConstantSumRange.h"
 
-// TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+using namespace cprior;
+
 int main() {
-    // TIP Press <shortcut actionId="RenameElement"/> when your caret is at the <b>lang</b> variable name to see how CLion can help you rename it.
-    cprior::math::Gamma::writePrecomputeHeaderFile();
+    /*
+        encoder::AttributeType t1("first", {"1", "this", "that", "ops"});
+        encoder::AttributeType t2("second", {"10", "20", "30"});
+        encoder::AttributeType t3("three", {"a", "b"});
 
+        encoder::AttributeSet s;
+        s.addAttribute(&t1).
+        s.addAttribute(&t2);
 
+        encoder::AttributeTuple at("ops   ,  30", s);
 
-    cprior::multinomial::AttributeTuple a({1,1,0}, true);
-    std::cout << a.num_of_reductions() << "\n";
-    cprior::multinomial::Variable v;
-    v.add({{1,1,0},false} , 3);
-    v.add({{1,0,1},false} , 5);
-    v.add({{1,0,0},true} , 2);
-
-    std::cout << v << "\n";
-
-    cprior::multinomial::InferenceNode inode(v);
-
-    inode.createSubTree();
-    std::cout << inode.getProbabilityAfter({{1,0,1}, false}) << "\n";
-    std::cout << inode.getSubTreeMeasureAfter({{1, 0, 1}, false}) << "\n";
-
-    std::cout << inode << std::endl;
-    std::cout << std::lgamma(12345) << "\t" <<cprior::math::Gamma::logInt(12345) << "!\n";
-
-    for (int i = 1; i <= 5; i++) {
-        // TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-        std::cout << "i = " << i << std::endl;
+        std::cout << at << std::endl;
+        std::cout << at << "$$" << t2 << "\n";
+        std::cout << at.stringFromIntValue(3) << " " << t.stringFromIntValue(0) << "\n";
+    */
+    util::ConstantSumRange r(5, 5, 4);
+    for (const auto& v: r) {
+        std::cout << v[0] << " " << v[1] << " " << v[2] << " " << v[3] << ":" << v.size() << std::endl;
     }
+    multinomial::InferenceEngine<MockOutcome> eng;
+    eng.addEvidence(MockOutcome(2), 2)
+            .addEvidence(MockOutcome(3), 1)
+            .addEvidence(MockOutcome(5), 3)
+            .addEvidence(MockOutcome(7), 1)
+            .addEvidence(MockOutcome(8), 2);
 
+    eng.processEvidence();
+    auto p = eng.computeProbability({
+        {1}, {2}, {3}, {4},
+        {5}, {6}, {7}, {8},
+    });
+
+    multinomial::Variable<MockOutcome> dif;
+    dif.add(MockOutcome(1), 2);
+    dif.add(MockOutcome(5), -3);
+    dif.add(MockOutcome(8), 3);
+
+
+    std::cout << p[0] << " " << p[1] << " " << p[6] << " " << std::endl;
+    std::cout << eng << std::endl;
+    eng.update(dif);
+    std::cout << eng << std::endl;
+
+
+    // Tokenization (non-matched fragments)
+    // Note that regex is matched only two times; when the third value is obtained
+    // the iterator is a suffix iterator.
+    const std::string text = "Quick  ,,  brown, \t  fox.";
+    const std::regex ws_re("(\\s|,)+"); // whitespace and ,
+    for (auto token = std::sregex_token_iterator(text.begin(), text.end(), ws_re, -1);
+         token != std::sregex_token_iterator(); ++token) {
+        std::cout << *token << '\n';
+    }
     return 0;
-    // TIP See CLion help at <a href="https://www.jetbrains.com/help/clion/">jetbrains.com/help/clion/</a>. Also, you can try interactive lessons for CLion by selecting 'Help | Learn IDE Features' from the main menu.
 }

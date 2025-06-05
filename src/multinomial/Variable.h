@@ -5,19 +5,45 @@
 #ifndef VARIABLE_H
 #define VARIABLE_H
 #include <unordered_map>
-#include "AttributeTuple.h"
+#include "../encoder/AttributeTuple.h"
 
 namespace cprior::multinomial {
+template<class Outcome>
+concept Reducable = requires(std::ostream& os, Outcome const obj)
+{
+    { obj.computeReductions() } -> std::convertible_to<std::vector<Outcome> >;
+    { obj.num_of_reductions() } -> std::convertible_to<util::HpFloat>;
+    { obj.group_size() } -> std::convertible_to<util::HpFloat>;
+    { obj.dim() } -> std::convertible_to<util::HpFloat>;
+    { std::hash<Outcome>{}(obj) } -> std::convertible_to<std::size_t>;
+    { obj == obj };
+    { os << obj };
+};
+
+template<Reducable Outcome>
 class Variable {
 public:
-    void add(Outcome&& observation, int count) {
-        counts_[std::move(observation)] += count;
+    int add(Outcome&& observation, int count) {
         total_count_ += count;
+        return (counts_[std::move(observation)] += count) - count;
     }
 
-    [[nodiscard]]
-    std::unordered_map<Outcome, int> counts() const {
-        return counts_;
+    int add(const Outcome& observation, int count) {
+        total_count_ += count;
+        return (counts_[observation] += count) - count;
+    }
+
+    std::vector<Variable> getReducedVariables() const {
+        if (counts_.empty()) return {};
+        std::vector<Variable> reduced_vars(counts_.begin()->first.num_of_reductions());
+        for (const auto& [outcome, count]: counts_) {
+            auto reductions = outcome.computeReductions();
+            assert(reductions.size() == reduced_vars.size());
+            for (int i = 0; i < reduced_vars.size(); ++i) {
+                reduced_vars[i].add(std::move(reductions[i]), count);
+            }
+        }
+        return reduced_vars;
     }
 
     [[nodiscard]]
@@ -25,15 +51,30 @@ public:
         return total_count_;
     }
 
-    int num_of_reductions() const {
-        return counts_.begin()->first.num_of_reductions();
+    [[nodiscard]]
+    const std::unordered_map<Outcome, int>& counts() const {
+        return counts_;
     }
 
     double dim() const {
         return counts_.begin()->first.dim();
     }
 
-    friend std::ostream& operator<<(std::ostream& os, const Variable& obj);
+    unsigned long long_dim() const {
+        return std::lround(this->dim());
+    }
+
+    bool hasEvenDim() const {
+        return long_dim() % 2 == 0;
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const Variable& obj) {
+        os << "[";
+        for (const auto& [outcome, count]: obj.counts_) {
+            os << outcome << " = " << count << " ";
+        }
+        return os << "]";
+    }
 
     int getCount(const Outcome& outcome) const {
         const auto& it = counts_.find(outcome);

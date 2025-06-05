@@ -8,7 +8,7 @@
 #include <string>
 #include <cmath>
 
-namespace cprior::math {
+namespace cprior::util {
 class HpFloat {
 public:
     HpFloat() = default;
@@ -26,23 +26,23 @@ public:
         return oss.str();
     }
 
-    friend std::ostream &operator<<(std::ostream &os, const HpFloat &obj) {
+    friend std::ostream& operator<<(std::ostream& os, const HpFloat& obj) {
         return os << obj.to_string();
     }
 
-    HpFloat operator+(const HpFloat &other) const {
+    HpFloat operator+(const HpFloat& other) const {
         return {val_ + other.val_};
     }
 
-    HpFloat operator-(const HpFloat &other) const {
+    HpFloat operator-(const HpFloat& other) const {
         return {val_ - other.val_};
     }
 
-    HpFloat operator/(const HpFloat &other) const {
+    HpFloat operator/(const HpFloat& other) const {
         return {val_ / other.val_};
     }
 
-    HpFloat operator*(const HpFloat &other) const {
+    HpFloat operator*(const HpFloat& other) const {
         return {val_ * other.val_};
     }
 
@@ -57,14 +57,29 @@ public:
     }
 
 
-    HpFloat &operator+=(const HpFloat &other) {
+    HpFloat& operator+=(const HpFloat& other) {
         val_ += other.val_;
+        return *this;
+    }
+
+    HpFloat& operator-=(const HpFloat& other) {
+        val_ -= other.val_;
+        return *this;
+    }
+
+    HpFloat& operator*=(const HpFloat& other) {
+        val_ *= other.val_;
+        return *this;
+    }
+
+    HpFloat& operator/=(const HpFloat& other) {
+        val_ /= other.val_;
         return *this;
     }
 
 private:
     double val_{};
 };
-} // namespace cprior::math
+}
 
 #endif // HP_FLOAT_H
