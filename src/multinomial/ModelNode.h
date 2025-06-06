@@ -8,17 +8,16 @@
 #include <vector>
 #include <cassert>
 
-#include "MockOutcome.h"
 #include "Variable.h"
-#include "../util/Gamma.h"
-#include "../util/HpFloat.h"
+#include "util/Gamma.h"
+#include "util/HpFloat.h"
 
 
 namespace cprior::multinomial {
 template<Reducable Outcome>
-class InferenceNode {
+class ModelNode {
 public:
-    explicit InferenceNode(Variable<Outcome> observations)
+    explicit ModelNode(Variable<Outcome> observations)
     : current_observations_(std::move(observations)) {
         using namespace util;
         auto n = current_observations_.total_count() + 1;
@@ -107,7 +106,7 @@ public:
         base_measure_ *= measure_diff.exp();
     }
 
-    friend std::ostream& operator<<(std::ostream& os, const InferenceNode& obj) {
+    friend std::ostream& operator<<(std::ostream& os, const ModelNode& obj) {
         os << obj.current_observations_ << ":" << obj.getProbability() << " {";
         for (const auto& child: obj.children_) os << child << "  ";
         return os << "}";
@@ -115,7 +114,7 @@ public:
 
 private:
     Variable<Outcome> current_observations_;
-    std::vector<InferenceNode> children_;
+    std::vector<ModelNode> children_;
     util::HpFloat base_measure_;
     util::HpFloat weight_ = 1.0;
 };

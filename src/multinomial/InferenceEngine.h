@@ -6,7 +6,7 @@
 #define CPRIOR_INFERENCE_ENGINE_H
 #include <ostream>
 
-#include "InferenceNode.h"
+#include "ModelNode.h"
 #include "Variable.h"
 
 namespace cprior::multinomial {
@@ -21,12 +21,12 @@ public:
 
     InferenceEngine& processEvidence() {
         if (root_ != nullptr) throw std::logic_error("evidence already processed");
-        root_ = std::make_unique<InferenceNode<Outcome> >(std::move(evidence_));
+        root_ = std::make_unique<ModelNode<Outcome> >(std::move(evidence_));
         size_ = root_->createSubTree();
         return *this;
     }
 
-    std::vector<util::HpFloat> computeProbability(const std::vector<Outcome>& query) const {
+    std::vector<util::HpFloat> computePosterior(const std::vector<Outcome>& query) const {
         if (root_ == nullptr) throw std::logic_error("evidence not processed");
         std::vector<util::HpFloat> result;
         result.reserve(query.size());
@@ -50,7 +50,7 @@ public:
 
 private:
     Variable<Outcome> evidence_{};
-    std::unique_ptr<InferenceNode<Outcome> > root_{};
+    std::unique_ptr<ModelNode<Outcome> > root_{};
     std::size_t size_ = 0;
 };
 } // cprior::multinomial

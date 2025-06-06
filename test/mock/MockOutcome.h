@@ -6,7 +6,7 @@
 #define MOCKOUTCOME_H
 #include <cassert>
 #include <ostream>
-#include <debug/vector>
+#include <vector>
 
 
 class MockOutcome {

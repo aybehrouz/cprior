@@ -26,6 +26,11 @@ public:
         return oss.str();
     }
 
+    [[nodiscard]]
+    double to_double() const {
+        return val_;
+    }
+
     friend std::ostream& operator<<(std::ostream& os, const HpFloat& obj) {
         return os << obj.to_string();
     }

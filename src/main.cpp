@@ -2,15 +2,16 @@
 #include <iostream>
 #include <regex>
 
-#include "src/encoder/AttributeTuple.h"
-#include "src/multinomial/InferenceEngine.h"
-#include "src/multinomial/MockOutcome.h"
-#include "src/multinomial/Variable.h"
-#include "src/util/ConstantSumRange.h"
+#include "encoder/AttributeTuple.h"
+#include "multinomial/InferenceEngine.h"
+#include "../test/mock/MockOutcome.h"
+#include "multinomial/Variable.h"
+#include "util/ConstantSumRange.h"
 
 using namespace cprior;
 
 int main() {
+    assert(5 == 6);
     /*
         encoder::AttributeType t1("first", {"1", "this", "that", "ops"});
         encoder::AttributeType t2("second", {"10", "20", "30"});
@@ -38,7 +39,7 @@ int main() {
             .addEvidence(MockOutcome(8), 2);
 
     eng.processEvidence();
-    auto p = eng.computeProbability({
+    auto p = eng.computePosterior({
         {1}, {2}, {3}, {4},
         {5}, {6}, {7}, {8},
     });
