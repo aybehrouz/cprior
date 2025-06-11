@@ -10,6 +10,8 @@ add_executable(full_test
         inf_engine_test.cpp
         ../src/util/Gamma.cpp
         ../src/encoder/AttributeTuple.cpp
+        ../src/util/ConstantSumRange.cpp
+        model_node_test.cpp
 )
 
 # linking Google_Tests_run with libraries

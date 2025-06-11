@@ -22,8 +22,9 @@ public:
         explicit Iterator(input_type current) : current_(std::move(current)) {}
 
         value_type operator*() const {
-            return { current_};
-        };
+            return current_;
+        }
+
 
         Iterator& operator++();
 

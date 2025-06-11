@@ -32,7 +32,7 @@ public:
         result.reserve(query.size());
         util::HpFloat sum = 0.0;
         for (auto&& outcome: query) {
-            sum += result.emplace_back(root_->getSubTreeMeasureAfter(outcome));
+            sum += result.emplace_back(root_->getTreeWeightedSumAfter(outcome));
         }
         if (result.size() > 1) for (auto& p: result) p /= sum;
 

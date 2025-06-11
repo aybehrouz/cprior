@@ -4,7 +4,10 @@
 
 #ifndef GAMMA_H
 #define GAMMA_H
+#include <vector>
 #include "HpFloat.h"
+
+
 #define GAMMA_PRECOMPUTE_FILE "gamma_precompute_values.inc"
 
 namespace cprior::util {
@@ -21,6 +24,8 @@ public:
 
 
     static void writePrecomputeHeaderFile();
+
+    static HpFloat MultiChoose(const std::vector<int>& x);
 
 private:
 #include GAMMA_PRECOMPUTE_FILE

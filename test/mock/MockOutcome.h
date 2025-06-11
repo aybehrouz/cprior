@@ -21,28 +21,36 @@ public:
          content_(content) {
     }
 
+    static std::vector<MockOutcome> possibleOutcomes() {
+        return {{1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}};
+    }
+
     int num_of_reductions() const {
         if (lvl_ == 0) return 1;
         if (lvl_ == 1) return 2;
         if (lvl_ == 2) return 0;
+        return -1;
     }
 
     double dim() const {
         if (lvl_ == 0) return 8;
         if (lvl_ == 1) return 4;
         if (lvl_ == 2) return 2;
+        return -1;
     }
 
     std::vector<MockOutcome> computeReductions() const {
         if (lvl_ == 0) return {MockOutcome(1, content_ % 4)};
         if (lvl_ == 1) return {MockOutcome(2, content_ % 2), MockOutcome(2, content_ / 2)};\
         if (lvl_ == 2) return {};
+        return {};
     }
 
     int group_size() const {
         if (lvl_ == 0) return 1;
         if (lvl_ == 1) return 2;
         if (lvl_ == 2) return 4;
+        return -1;
     }
 
     friend bool operator==(const MockOutcome& lhs, const MockOutcome& rhs) {

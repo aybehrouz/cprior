@@ -28,4 +28,6 @@ TEST(InferenceEngineTest, CalculatesCentralProbabilities) {
     }
 
     EXPECT_DOUBLE_EQ(engine.computePosterior({5})[0].to_double(), 9.1541000736655327e-12);
+
+
 }

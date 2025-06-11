@@ -8,8 +8,6 @@
 #include <cmath>
 
 namespace cprior::util {
-
-
 double Gamma::lgammaLimit(double z) {
     return (z - 0.5) * std::log(z) - z + std::log(2 * M_PI) / 2;
 }
@@ -45,8 +43,15 @@ void Gamma::writePrecomputeHeaderFile() {
     header_file << "}; \n";
 }
 
-
-
+HpFloat Gamma::MultiChoose(const std::vector<int>& x) {
+    HpFloat result = 0.0;
+    int n = 0;
+    for (const int x_i : x) {
+        result += lgammaInt(x_i + 1);
+        n += x_i;
+    }
+    return (lgammaInt(n + 1) - result).exp();
+}
 
 
 } // cprior::math

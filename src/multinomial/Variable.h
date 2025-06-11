@@ -11,6 +11,7 @@ namespace cprior::multinomial {
 template<class Outcome>
 concept Reducable = requires(std::ostream& os, Outcome const obj)
 {
+    { Outcome::possibleOutcomes() } -> std::convertible_to<std::vector<Outcome> >;
     { obj.computeReductions() } -> std::convertible_to<std::vector<Outcome> >;
     { obj.num_of_reductions() } -> std::convertible_to<util::HpFloat>;
     { obj.group_size() } -> std::convertible_to<util::HpFloat>;
@@ -54,6 +55,11 @@ public:
     [[nodiscard]]
     const std::unordered_map<Outcome, int>& counts() const {
         return counts_;
+    }
+
+    [[nodiscard]]
+    bool empty() const {
+        return counts_.empty();
     }
 
     double dim() const {
