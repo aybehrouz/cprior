@@ -5,7 +5,7 @@
 #ifndef VARIABLE_H
 #define VARIABLE_H
 #include <unordered_map>
-#include "encoder/AttributeTuple.h"
+#include "util/HpFloat.h"
 
 namespace cprior::multinomial {
 template<class Outcome>

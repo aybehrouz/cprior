@@ -6,8 +6,12 @@ add_compile_options(-O3)
 add_executable(cprior
         main.cpp
         util/Gamma.cpp
-        encoder/AttributeTuple.cpp
         util/ConstantSumRange.cpp
+        encoder/Entry.cpp
+        encoder/Entry.h
+        encoder/Tuple.cpp
+        encoder/DataSet.cpp
+        encoder/DataSet.h
 )
 
 target_compile_definitions(cprior PUBLIC NDEBUG)

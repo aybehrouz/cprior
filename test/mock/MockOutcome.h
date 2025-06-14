@@ -2,8 +2,9 @@
 // Created by aybehrouz on 6/4/25.
 //
 
-#ifndef MOCKOUTCOME_H
-#define MOCKOUTCOME_H
+#ifndef MOCK_OUTCOME_H
+#define MOCK_OUTCOME_H
+
 #include <cassert>
 #include <ostream>
 #include <vector>
@@ -78,4 +79,4 @@ struct std::hash<MockOutcome> {
     }
 };
 
-#endif //MOCKOUTCOME_H
+#endif //MOCK_OUTCOME_H

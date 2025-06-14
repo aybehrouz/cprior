@@ -5,6 +5,7 @@
 #include <gtest/gtest.h>
 
 #include "mock/MockOutcome.h"
+#include "mock/SmallOutcome.h"
 #include "multinomial/ModelNode.h"
 #include "multinomial/Variable.h"
 
@@ -20,9 +21,7 @@ TEST(ModelNodeTest, CalculatesWeightedSums) {
     auto node_count = root.createSubTree();
     EXPECT_DOUBLE_EQ(root.getTreeWeightedSum().to_double(), 4.0651172060858136e-07);
 
-    ModelNode<MockOutcome>::NormalizeWeights(root, node_count);
-
-    EXPECT_DOUBLE_EQ(root.getTreeWeightedSum().to_double(), 1.0162793015214534e-07);
+    EXPECT_DOUBLE_EQ(root.getTreeWeightedSum().to_double() / node_count, 1.0162793015214534e-07);
 
 }
 
@@ -34,7 +33,6 @@ TEST(ModelNodeTest, UpdatesObservations) {
 
     ModelNode root(observations);
     auto node_count = root.createSubTree();
-    ModelNode<MockOutcome>::NormalizeWeights(root, node_count);
 
 
     Variable<MockOutcome> delta;
@@ -50,14 +48,27 @@ TEST(ModelNodeTest, UpdatesObservations) {
     // {1,0,2,8,0,0,0,1}
     root.updateObservations(delta);
 
-    EXPECT_DOUBLE_EQ(root.getTreeWeightedSum().to_double(), 1.9692160029600339e-09);
+    EXPECT_DOUBLE_EQ(root.getTreeWeightedSum().to_double() / node_count , 1.9692160029600339e-09);
 
     EXPECT_DOUBLE_EQ(root.getNodeProbability().to_double(), 6.8119594029017557e-09);
 }
 
 
 TEST(ModelNodeTest, CreatesTree) {
-    auto root = ModelNode<MockOutcome>::CreateModelTree(14, 1);
+    auto root = ModelNode<SmallOutcome>::CreateModelTree(150, 1);
+}
+
+TEST(ModelNodeTest, HandlesLargeN) {
+    Variable<MockOutcome> observations;
+
+    observations.add({3}, 70);
+    observations.add({4}, 50);
+    observations.add({6}, 60);
+
+    ModelNode root(observations);
+    const auto n = root.createSubTree();
+
+    EXPECT_DOUBLE_EQ(root.getNodeProbability().to_double() / n, 2.3606648986036229e-63);
 }
 
 using namespace cprior::util;

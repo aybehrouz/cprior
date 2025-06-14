@@ -131,7 +131,6 @@ public:
         ModelNode root(std::move(init));
         root.createSubTree();
         auto previous = *possible_counts.begin();
-        util::HpFloat w_sum = 1.0;
         for (int iteration = 1; iteration <= iterations; ++iteration) {
             for (const auto& current: possible_counts) {
                 Variable<Outcome> delta;
@@ -145,17 +144,11 @@ public:
                 previous = current;
             }
             std::cout << "iteration #" << iteration << ": ";
-            w_sum = UpdateWeights_(root);
-            std::cout << " -> "<< w_sum << std::endl;
+            UpdateWeights_(root);
+            std::cout << std::endl;
         }
 
-        NormalizeWeights(root, w_sum);
         return root;
-    }
-
-    static void NormalizeWeights(ModelNode& root, const util::HpFloat& normalizer) {
-        root.update_weight(root.weight_ / normalizer);
-        for (auto& child: root.children_) NormalizeWeights(child, normalizer);
     }
 
 private:
@@ -175,13 +168,11 @@ private:
         for (auto& child: root.children_) UpdateLogPosterior_(child, weighted_sum, coefficient);
     }
 
-    static util::HpFloat UpdateWeights_(ModelNode& root) {
-        auto w = root.expected_log_posterior_.exp();
-        root.update_weight(w);
-        std::cout << w.to_double() << " ";
+    static void UpdateWeights_(ModelNode& root) {
+        root.update_weight(root.expected_log_posterior_.exp());
+        std::cout << root.weight_.to_double() << " ";
         root.expected_log_posterior_ = 0.0;
-        for (auto& child: root.children_) w += UpdateWeights_(child);
-        return w;
+        for (auto& child: root.children_) UpdateWeights_(child);
     }
 };
 } // cprior::multinomial
