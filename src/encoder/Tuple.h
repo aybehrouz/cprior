@@ -34,6 +34,10 @@ public:
         return dim_;
     }
 
+    void close() {
+        closed_ = true;
+    }
+
     Tuple& AddEntry(std::unique_ptr<Entry> e);
 
     Tuple& AddNominalEntry(std::vector<std::string> tokens) {
@@ -62,7 +66,7 @@ public:
 
     class Instance {
     public:
-        Instance(Tuple& tuple, const std::vector<std::string>& tokens);
+        Instance(const Tuple& tuple, const std::vector<std::string>& tokens);
 
 
         std::vector<Instance> ComputeReductions() const;
@@ -90,7 +94,7 @@ public:
 
         [[nodiscard]]
         std::size_t hash() const {
-            if (content_bit_blocks_.size() <= 1) return content_bit_blocks_.back();
+            if (content_bit_blocks_.size() == 1) return content_bit_blocks_.back();
             std::size_t hash = 0x651A07A9;
             for (const auto bit_block: content_bit_blocks_) {
                 hash ^= (hash << 6) + (hash >> 2) + 0x27AE1971 + bit_block;
@@ -114,11 +118,26 @@ public:
 
         void RemoveAttribute_(int index);
 
-        std::string StringValueOf_(const Entry& e) const;
+        std::string StringValueOf_(const Entry& e) const {
+            return e.StringFromIntValue(IntValueOf_(e));
+        }
+
+        Entry::IntType IntValueOf_(const Entry& e) const {
+            return (content_bit_blocks_[e.block_index()] & ~e.negative_mask()) >> e.block_offset();
+        }
+
+        void SetValueOf_(const Entry& e, Entry::IntType value) {
+            content_bit_blocks_[e.block_index()] &= e.negative_mask();
+            content_bit_blocks_[e.block_index()] |= value << e.block_offset();
+        }
+
+        void SetValueOf_(const Entry& e, const std::string& value) {
+            SetValueOf_(e, e.IntValueFromString(value));
+        }
     };
 
 private:
-    std::vector<std::unique_ptr<Entry> > entries_;
+    std::vector<std::unique_ptr<Entry>> entries_;
     int index_of_target_;
     int current_block_ = 0;
     unsigned current_offset_ = 0;

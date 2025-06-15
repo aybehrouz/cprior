@@ -38,7 +38,7 @@ public:
         return -1;
     }
 
-    std::vector<SmallOutcome> computeReductions() const {
+    std::vector<SmallOutcome> ComputeReductions() const {
         if (lvl_ == 0) return {SmallOutcome(1, content_ % 2), SmallOutcome(1, (content_ + 1) / 2)};
         if (lvl_ == 1) return {};
         return {};

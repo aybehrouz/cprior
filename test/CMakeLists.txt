@@ -19,6 +19,8 @@ add_executable(full_test
         ../src/encoder/DataSet.cpp
         ../src/encoder/DataSet.h
         dataset_test.cpp
+        ../src/multinomial/Evaluator.cpp
+        ../src/multinomial/Evaluator.h
 )
 
 # linking Google_Tests_run with libraries

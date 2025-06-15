@@ -7,27 +7,29 @@
 #include <fstream>
 #include <iostream>
 #include <regex>
+#include <tuple>
+#include <gtest/internal/gtest-port.h>
+
+#include "Tuple.h"
 
 namespace cprior::encoder {
 
 class DataSet {
 public:
-    void ReadFile(const std::string& file_name) {
-        std::ifstream file(file_name);
-        if (!file.is_open()) throw std::runtime_error("Error opening file");
+    explicit DataSet(const Tuple& tuple, const std::string& data_file_name);
 
-        std::string line;
-        const std::regex reg("(\\s|,)+");
-        while (std::getline(file, line)) {
-            auto token_iter = std::sregex_token_iterator(line.begin(), line.end(), reg, -1);
-            std::vector<std::string> tokens(token_iter, {});
-            for (const auto& token: tokens) {
-                std::cout << token << " ";
-            }
-            std::cout << std::endl;
-        }
+    static Tuple ReadInfoFile(const std::string& info_file_name);
+
+    auto begin() {
+        return data_.begin();
     }
 
+    auto end() {
+        return data_.end();
+    }
+
+private:
+    std::vector<Tuple::Instance> data_{};
 };
 
 

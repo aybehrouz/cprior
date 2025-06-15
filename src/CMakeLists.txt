@@ -12,6 +12,8 @@ add_executable(cprior
         encoder/Tuple.cpp
         encoder/DataSet.cpp
         encoder/DataSet.h
+        multinomial/Evaluator.cpp
+        multinomial/Evaluator.h
 )
 
 target_compile_definitions(cprior PUBLIC NDEBUG)

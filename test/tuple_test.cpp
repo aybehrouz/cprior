@@ -34,6 +34,35 @@ TEST(TupleTest, AddsEntries) {
     EXPECT_EQ(sample.attribute_str(5), "one");
 }
 
+TEST(TupleTest, c) {
+    Tuple tuple(2);
+    tuple
+            .AddNominalEntry({"first", "1", "2"})
+            .AddNominalEntry({"second", "x", "y", "z"})
+            .AddNominalEntry({"target", "A", "B", "C", "D", "E"})
+            .AddNominalEntry({"third", "1", "2", "3", "4"});
+
+    Tuple::Instance sample(tuple, {"1", "z", "C", "3"});
+
+    auto domain = sample.ComputeTargetInstances();
+    ASSERT_EQ(domain.size(), 5);
+    EXPECT_EQ(domain[0], Tuple::Instance(tuple, {"1", "z", "C", "3"}));
+    EXPECT_EQ(domain[1], Tuple::Instance(tuple, {"1", "z", "A", "3"}));
+    EXPECT_EQ(domain[2], Tuple::Instance(tuple, {"1", "z", "B", "3"}));
+    EXPECT_EQ(domain[3], Tuple::Instance(tuple, {"1", "z", "D", "3"}));
+    EXPECT_EQ(domain[4], Tuple::Instance(tuple, {"1", "z", "E", "3"}));
+
+    domain = Tuple::Instance(tuple, {"1", "z", "A", "3"}).ComputeTargetInstances();
+    ASSERT_EQ(domain.size(), 5);
+    EXPECT_EQ(domain[0], Tuple::Instance(tuple, {"1", "z", "A", "3"}));
+    EXPECT_EQ(domain[1], Tuple::Instance(tuple, {"1", "z", "B", "3"}));
+    EXPECT_EQ(domain[2], Tuple::Instance(tuple, {"1", "z", "C", "3"}));
+    EXPECT_EQ(domain[3], Tuple::Instance(tuple, {"1", "z", "D", "3"}));
+    EXPECT_EQ(domain[4], Tuple::Instance(tuple, {"1", "z", "E", "3"}));
+
+
+}
+
 int CountReductions(const Tuple::Instance& instance) {
     int count = instance.num_of_reductions();
     for (const auto& r: instance.ComputeReductions()) {

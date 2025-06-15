@@ -35,6 +35,16 @@ public:
         return os << obj.to_string();
     }
 
+    friend bool operator<(const HpFloat& lhs, const HpFloat& rhs) {
+        return lhs.val_ < rhs.val_;
+    }
+
+
+    friend bool operator>(const HpFloat& lhs, const HpFloat& rhs) {
+        return rhs < lhs;
+    }
+
+
     HpFloat operator+(const HpFloat& other) const {
         return {val_ + other.val_};
     }

@@ -40,7 +40,7 @@ public:
         return -1;
     }
 
-    std::vector<MockOutcome> computeReductions() const {
+    std::vector<MockOutcome> ComputeReductions() const {
         if (lvl_ == 0) return {MockOutcome(1, content_ % 4)};
         if (lvl_ == 1) return {MockOutcome(2, content_ % 2), MockOutcome(2, content_ / 2)};\
         if (lvl_ == 2) return {};

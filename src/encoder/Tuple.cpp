@@ -5,22 +5,20 @@
 #include "Tuple.h"
 
 namespace cprior::encoder {
-
 using std::vector, std::move;
 
-Tuple::Instance::Instance(Tuple& tuple, const std::vector<std::string>& tokens)
+Tuple::Instance::Instance(const Tuple& tuple, const std::vector<std::string>& tokens)
     : tuple_(tuple),
       content_bit_blocks_(tuple.block_count(), 0),
       dim_(tuple.dim()),
       attr_count_(tuple.attribute_count()) {
+    if (!tuple.closed_) throw std::runtime_error("Tuple is not closed");
     if (tokens.size() != tuple_.entry_count()) {
         throw std::invalid_argument("Wrong number of tokens");
     }
     for (int i = 0; i < tuple_.entry_count(); ++i) {
-        content_bit_blocks_[tuple_.entry(i).block_index()] |=
-                tuple_.entry(i).IntValueFromString(tokens[i]) << tuple_.entry(i).block_offset();
+        SetValueOf_(tuple.entry(i), tokens[i]);
     }
-    tuple.closed_ = true;
 }
 
 vector<Tuple::Instance> Tuple::Instance::ComputeReductions() const {
@@ -34,13 +32,17 @@ vector<Tuple::Instance> Tuple::Instance::ComputeReductions() const {
 }
 
 std::vector<Tuple::Instance> Tuple::Instance::ComputeTargetInstances() const {
-    throw std::invalid_argument("Not implemented");
-}
+    const auto& target = tuple_.entry(tuple_.index_of_target_);
+    const auto target_value = IntValueOf_(target);
 
-std::string Tuple::Instance::StringValueOf_(const Entry& entry) const {
-    return entry.StringFromIntValue(
-        (content_bit_blocks_[entry.block_index()] & ~entry.negative_mask()) >> entry.block_offset()
-    );
+    std::vector result(target.cardinality(), *this);
+    for (Entry::IntType i = 1; i < target_value; ++i) {
+        result[i].SetValueOf_(target, i);
+    }
+    for (Entry::IntType i = target_value; i < target.cardinality(); ++i) {
+        result[i].SetValueOf_(target, i + 1);
+    }
+    return result;
 }
 
 std::string Tuple::Instance::attribute_str(int index) const {
@@ -82,5 +84,4 @@ std::ostream& operator<<(std::ostream& os, const Tuple::Instance& obj) {
     for (const auto attr: obj.content_bit_blocks_) os << std::bitset<64>(attr) << "|";
     return os;
 }
-
 }

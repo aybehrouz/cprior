@@ -7,6 +7,7 @@
 #include <ostream>
 #include <vector>
 #include <cassert>
+#include <iostream>
 
 #include "Variable.h"
 #include "util/ConstantSumRange.h"
@@ -63,7 +64,7 @@ public:
     util::HpFloat getTreeWeightedSumAfter(const Outcome& observation) const {
         util::HpFloat measure = base_measure_ *
                                 (current_observations_.getCount(observation) + 0.5) / observation.group_size();;
-        const std::vector<Outcome> reduced_observation = observation.computeReductions();
+        const std::vector<Outcome> reduced_observation = observation.ComputeReductions();
         assert(children_.size() == reduced_observation.size());
         for (int i = 0; i < children_.size(); ++i) {
             measure += children_[i].getTreeWeightedSumAfter(reduced_observation[i]);
