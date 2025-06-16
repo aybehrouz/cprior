@@ -80,7 +80,7 @@ public:
         return node_count;
     }
 
-    void update_weight(const util::HpFloat& weight) {
+    void set_weight(const util::HpFloat& weight) {
         base_measure_ = base_measure_ * weight / weight_;
         weight_ = weight;
     }
@@ -170,7 +170,7 @@ private:
     }
 
     static void UpdateWeights_(ModelNode& root) {
-        root.update_weight(root.expected_log_posterior_.exp());
+        root.set_weight(root.expected_log_posterior_.exp());
         std::cout << root.weight_.to_double() << " ";
         root.expected_log_posterior_ = 0.0;
         for (auto& child: root.children_) UpdateWeights_(child);

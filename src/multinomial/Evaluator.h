@@ -19,12 +19,13 @@ public:
 
     [[nodiscard]]
     double accuracy() const {
-        return accuracy_;
+        return static_cast<double>(correct_count_) / static_cast<double>(test_count_);
     }
 private:
     encoder::Tuple tuple_info_;
-    double accuracy_ = 0.0;
-    int trial_count_ = 0;
+    std::size_t correct_count_ = 0;
+    std::size_t test_count_ = 0;
+
 };
 } // cprior::multinomial
 

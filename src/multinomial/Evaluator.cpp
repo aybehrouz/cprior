@@ -23,8 +23,10 @@ void Evaluator::Evaluate(const std::string& data_file_name) {
     InferenceEngine<Tuple::Instance> engine;
     std::vector<Tuple::Instance> test_set;
 
+    int train_size = 0;
     for (auto& sample: data) {
         if (select(rnd)) {
+            ++train_size;
             std::cout << "train:" << sample << std::endl;
             engine.AddEvidence(std::move(sample));
         } else {
@@ -33,27 +35,25 @@ void Evaluator::Evaluate(const std::string& data_file_name) {
         }
     }
 
+    if (train_size == 0) return;
+
     engine.ProcessEvidence();
 
-    int correct = 0;
+    auto correct_prv_value = correct_count_;
     for (const auto& test_sample: test_set) {
         auto possible_predictions = test_sample.ComputeTargetInstances();
         auto prediction = engine.MostProbableOutcome(possible_predictions);
         if (prediction == 0) {
-            ++correct;
+            ++correct_count_;
         } else {
             std::cout << "Wrong prediction:" << possible_predictions[prediction] <<
                     "instead of " << test_sample << std::endl;
         }
     }
 
-    std::cout << "Correct:" << correct << " || Wrong:" << test_set.size() - correct << std::endl;
+    test_count_ += test_set.size();
 
-
-    if (!test_set.empty()) {
-        accuracy_ = accuracy_ * trial_count_ + correct / static_cast<double>(test_set.size());
-        ++trial_count_;
-        accuracy_ /= trial_count_;
-    }
+    std::cout <<"Correct:" << correct_count_ - correct_prv_value <<
+        "\tWrong:" << test_set.size() - (correct_count_ - correct_prv_value) << std::endl;
 }
 }

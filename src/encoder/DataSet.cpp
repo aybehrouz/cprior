@@ -15,6 +15,7 @@ DataSet::DataSet(const Tuple& tuple, const std::string& data_file_name) {
     string line;
     const regex reg("(\\s|,)+");
     while (getline(data_file, line)) {
+        if (line.empty()) continue;
         auto token_iter = sregex_token_iterator(line.begin(), line.end(), reg, -1);
         vector<string> tokens(token_iter, {});
         data_.emplace_back(tuple, tokens);

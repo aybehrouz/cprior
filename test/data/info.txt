@@ -1,0 +1,4 @@
+1
+Nominal     type, a, b, c, d
+Nominal gender,  male, female
+Nominal   game, win, lose

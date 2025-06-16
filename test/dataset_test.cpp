@@ -25,8 +25,8 @@ TEST(DatasetTest, ReadsFromFile) {
 TEST(EvaluatorTest, CalculatesAccuracy) {
     Evaluator evaluator("binary3.info");
 
-    for (int i = 0; i < 500; ++i) {
+    for (int i = 0; i < 1000; ++i) {
         evaluator.Evaluate("binary3.data");
     }
-    EXPECT_NEAR(evaluator.accuracy(), 0.98, 0.01);
+    EXPECT_NEAR(evaluator.accuracy(), 0.97, 0.01);
 }

@@ -1,0 +1,6 @@
+a,   female, win
+
+c,   male , lose
+d, female, win
+
+
