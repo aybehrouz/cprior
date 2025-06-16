@@ -14,13 +14,13 @@ template<Reducable Outcome>
 class InferenceEngine {
 public:
     void AddEvidence(Outcome&& observation, int count = 1) {
-        evidence_.add(std::move(observation), count);
+        evidence_.Add(std::move(observation), count);
     }
 
     InferenceEngine& ProcessEvidence() {
         if (root_ != nullptr) throw std::logic_error("Evidence already processed");
         root_ = std::make_unique<ModelNode<Outcome>>(std::move(evidence_));
-        size_ = root_->createSubTree();
+        size_ = root_->CreateSubTree();
         return *this;
     }
 
@@ -28,7 +28,7 @@ public:
         int result = 0;
         util::HpFloat max = 0.0;
         for (int i = 0; i < query.size(); ++i) {
-            if (auto p = root_->getTreeWeightedSumAfter(query[i]); p > max) {
+            if (auto p = root_->TreeWeightedSumAfter(query[i]); p > max) {
                 max = p;
                 result = i;
             }
@@ -36,22 +36,17 @@ public:
         return result;
     }
 
-    std::vector<util::HpFloat> computePosterior(const std::vector<Outcome>& query) const {
+    std::vector<util::HpFloat> ComputePosterior(const std::vector<Outcome>& query) const {
         if (root_ == nullptr) throw std::logic_error("Evidence not processed");
         std::vector<util::HpFloat> result;
         result.reserve(query.size());
         util::HpFloat sum = 0.0;
         for (auto&& outcome: query) {
-            sum += result.emplace_back(root_->getTreeWeightedSumAfter(outcome));
+            sum += result.emplace_back(root_->TreeWeightedSumAfter(outcome));
         }
         if (result.size() > 1) for (auto& p: result) p /= sum;
 
         return result;
-    }
-
-    //todo: maybe unnecessary
-    void update(Variable<Outcome> delta) {
-        root_->updateObservations(delta);
     }
 
     friend std::ostream& operator<<(std::ostream& os, const InferenceEngine& obj) {

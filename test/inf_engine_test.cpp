@@ -19,12 +19,12 @@ TEST(InferenceEngineTest, CalculatesCentralProbabilities) {
 
     engine.ProcessEvidence();
 
-    auto got = engine.computePosterior({{1}, {3}, {8}, {7},});
+    auto got = engine.ComputePosterior({{1}, {3}, {8}, {7},});
     std::vector expected = {0.093906757691225987, 0.23013424434611504, 0.57428073796151557, 0.10167826000114334};
 
     for (int i = 0; i < got.size(); ++i) {
         EXPECT_DOUBLE_EQ(got[i].to_double(), expected[i]) << "for i = " << i;
     }
 
-    EXPECT_DOUBLE_EQ(engine.computePosterior({5})[0].to_double(), 9.1541000736655327e-12);
+    EXPECT_DOUBLE_EQ(engine.ComputePosterior({5})[0].to_double(), 9.1541000736655327e-12);
 }

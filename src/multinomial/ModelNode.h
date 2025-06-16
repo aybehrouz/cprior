@@ -40,42 +40,42 @@ public:
         base_measure_ = log_probability.exp();
     }
 
-    util::HpFloat getNodeProbabilityAfter(const Outcome& observation) const {
+    util::HpFloat NodeProbabilityAfter(const Outcome& observation) const {
         return base_measure_ *
-               (current_observations_.getCount(observation) + 0.5) / observation.group_size() / weight_;
+               (current_observations_.count(observation) + 0.5) / observation.group_size() / weight_;
     }
 
     [[nodiscard]]
-    util::HpFloat getNodeProbability() const {
+    util::HpFloat NodeProbability() const {
         return base_measure_ *
             (current_observations_.total_count() + current_observations_.dim() / 2) / weight_;
     }
 
     [[nodiscard]]
-    util::HpFloat getTreeWeightedSum() const {
+    util::HpFloat TreeWeightedSum() const {
         util::HpFloat measure = base_measure_ *
                                 (current_observations_.total_count() + current_observations_.dim() / 2);
         for (const auto& child: children_) {
-            measure += child.getTreeWeightedSum();
+            measure += child.TreeWeightedSum();
         }
         return measure;
     }
 
-    util::HpFloat getTreeWeightedSumAfter(const Outcome& observation) const {
+    util::HpFloat TreeWeightedSumAfter(const Outcome& observation) const {
         util::HpFloat measure = base_measure_ *
-                                (current_observations_.getCount(observation) + 0.5) / observation.group_size();;
+                                (current_observations_.count(observation) + 0.5) / observation.group_size();;
         const std::vector<Outcome> reduced_observation = observation.ComputeReductions();
         assert(children_.size() == reduced_observation.size());
         for (int i = 0; i < children_.size(); ++i) {
-            measure += children_[i].getTreeWeightedSumAfter(reduced_observation[i]);
+            measure += children_[i].TreeWeightedSumAfter(reduced_observation[i]);
         }
         return measure;
     }
 
-    int createSubTree() {
+    int CreateSubTree() {
         int node_count = 1;
-        for (auto&& reduced: current_observations_.getReducedVariables()) {
-            node_count += children_.emplace_back(std::move(reduced)).createSubTree();
+        for (auto&& reduced: current_observations_.ComputeReducedVariables()) {
+            node_count += children_.emplace_back(std::move(reduced)).CreateSubTree();
         }
         return node_count;
     }
@@ -85,20 +85,20 @@ public:
         weight_ = weight;
     }
 
-    void updateObservations(const Variable<Outcome>& delta) {
+    void UpdateObservations(const Variable<Outcome>& delta) {
         if (delta.empty()) return;
         using namespace util;
 
-        auto reduced_deltas = delta.getReducedVariables();
+        auto reduced_deltas = delta.ComputeReducedVariables();
         for (int i = 0; i < children_.size(); ++i) {
-            children_[i].updateObservations(reduced_deltas[i]);
+            children_[i].UpdateObservations(reduced_deltas[i]);
         }
 
         const auto old_n = current_observations_.total_count() + 1;
         int n_diff = 0;
         HpFloat measure_diff = 0.0;
         for (const auto& [outcome, diff]: delta.counts()) {
-            const auto old_count = current_observations_.add(outcome, diff);
+            const auto old_count = current_observations_.Add(outcome, diff);
             measure_diff += Gamma::lgammaIntPlusHalf(old_count + diff) - Gamma::lgammaIntPlusHalf(old_count) -
                     HpFloat(outcome.group_size()).log() * diff;
             n_diff += diff;
@@ -119,7 +119,7 @@ public:
     }
 
     friend std::ostream& operator<<(std::ostream& os, const ModelNode& obj) {
-        os << obj.current_observations_ << ":" << obj.getNodeProbability() << " {";
+        os << obj.current_observations_ << ":" << obj.NodeProbability() << " {";
         for (const auto& child: obj.children_) os << child << "  ";
         return os << "}";
     }
@@ -128,20 +128,20 @@ public:
         std::vector<Outcome> outcomes = Outcome::possibleOutcomes();
         util::ConstantSumRange possible_counts(n, n, outcomes.size());
         Variable<Outcome> init;
-        init.add(outcomes.back(), n);
+        init.Add(outcomes.back(), n);
         ModelNode root(std::move(init));
-        root.createSubTree();
+        root.CreateSubTree();
         auto previous = *possible_counts.begin();
         for (int iteration = 1; iteration <= iterations; ++iteration) {
             for (const auto& current: possible_counts) {
                 Variable<Outcome> delta;
                 for (int i = 0; i < current.size(); ++i) {
                     if (int diff = current[i] - previous[i]; diff != 0) {
-                        delta.add(outcomes[i], diff);
+                        delta.Add(outcomes[i], diff);
                     }
                 }
-                root.updateObservations(delta);
-                UpdateLogPosterior_(root, root.getTreeWeightedSum(), util::Gamma::MultiChoose(current));
+                root.UpdateObservations(delta);
+                UpdateLogPosterior_(root, root.TreeWeightedSum(), util::Gamma::MultiChoose(current));
                 previous = current;
             }
             std::cout << "iteration #" << iteration << ": ";
@@ -162,7 +162,7 @@ private:
 
     static void UpdateLogPosterior_(ModelNode& root,
                                   const util::HpFloat& weighted_sum, const util::HpFloat& coefficient) {
-        auto c = root.getNodeProbability();
+        auto c = root.NodeProbability();
         if (c.to_double() != 0) {
             root.expected_log_posterior_ += coefficient * c * (c.log() + root.weight_.log() - weighted_sum.log());
         }

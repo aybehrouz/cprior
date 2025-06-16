@@ -23,24 +23,24 @@ concept Reducable = requires(std::ostream& os, Outcome const obj)
 template<Reducable Outcome>
 class Variable {
 public:
-    int add(Outcome&& observation, int count) {
+    int Add(Outcome&& observation, int count) {
         total_count_ += count;
         return (counts_[std::move(observation)] += count) - count;
     }
 
-    int add(const Outcome& observation, int count) {
+    int Add(const Outcome& observation, int count) {
         total_count_ += count;
         return (counts_[observation] += count) - count;
     }
 
-    std::vector<Variable> getReducedVariables() const {
+    std::vector<Variable> ComputeReducedVariables() const {
         if (counts_.empty()) return {};
         std::vector<Variable> reduced_vars(counts_.begin()->first.num_of_reductions());
         for (const auto& [outcome, count]: counts_) {
             auto reductions = outcome.ComputeReductions();
             assert(reductions.size() == reduced_vars.size());
             for (int i = 0; i < reduced_vars.size(); ++i) {
-                reduced_vars[i].add(std::move(reductions[i]), count);
+                reduced_vars[i].Add(std::move(reductions[i]), count);
             }
         }
         return reduced_vars;
@@ -69,10 +69,6 @@ public:
         return std::lround(this->dim());
     }
 
-    bool hasEvenDim() const {
-        return long_dim() % 2 == 0;
-    }
-
     friend std::ostream& operator<<(std::ostream& os, const Variable& obj) {
         os << "[";
         for (const auto& [outcome, count]: obj.counts_) {
@@ -81,7 +77,7 @@ public:
         return os << "]";
     }
 
-    int getCount(const Outcome& outcome) const {
+    int count(const Outcome& outcome) const {
         const auto& it = counts_.find(outcome);
         return it == counts_.end() ? 0 : it->second;
     }
