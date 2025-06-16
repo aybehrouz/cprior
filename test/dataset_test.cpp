@@ -8,6 +8,7 @@
 #include "multinomial/Evaluator.h"
 
 using namespace cprior::encoder;
+using namespace cprior::multinomial;
 
 TEST(DatasetTest, ReadsFromFile) {
 
@@ -15,9 +16,17 @@ TEST(DatasetTest, ReadsFromFile) {
 
     DataSet d(t, "data.txt");
 
-    for (const auto & datum: d) {
-        std::cout << datum << std::endl;
-    }
+    EXPECT_EQ(*d.begin(), Tuple::Instance(t, {"a","female","win"}));
+    EXPECT_EQ(*++d.begin(), Tuple::Instance(t, {"c","male","lose"}));
+    EXPECT_EQ(*++++d.begin(), Tuple::Instance(t, {"d","female","win"}));
 
-    cprior::multinomial::Evaluator::Eval();
+}
+
+TEST(EvaluatorTest, CalculatesAccuracy) {
+    Evaluator evaluator("binary3.info");
+
+    for (int i = 0; i < 500; ++i) {
+        evaluator.Evaluate("binary3.data");
+    }
+    EXPECT_NEAR(evaluator.accuracy(), 0.98, 0.01);
 }

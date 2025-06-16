@@ -79,7 +79,7 @@ public:
 
         [[nodiscard]]
         int num_of_reductions() const {
-            return tuple_.attribute_count() - head_attr_;
+            return attr_count_ <= 1 ? 0 : tuple_.attribute_count() - head_attr_;
         }
 
         [[nodiscard]]

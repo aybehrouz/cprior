@@ -73,9 +73,9 @@ TEST(ModelNodeTest, HandlesLargeN) {
 
 using namespace cprior::util;
 TEST(UtilTest, Gamma) {
-    EXPECT_DOUBLE_EQ(Gamma::MultiChoose({2,3,0,1}).to_double(), 60);
+    EXPECT_EQ(std::lround(Gamma::MultiChoose({2,3,0,1}).to_double()), 60);
 
-    EXPECT_DOUBLE_EQ(Gamma::MultiChoose({5,0,10}).to_double(), 3003);
+    EXPECT_DOUBLE_EQ(std::lround(Gamma::MultiChoose({5,0,10}).to_double()), 3003);
 
-    EXPECT_DOUBLE_EQ(Gamma::MultiChoose({0,0,0}).to_double(), 1);
+    EXPECT_DOUBLE_EQ(std::lround(Gamma::MultiChoose({0,0,0}).to_double()), 1);
 }

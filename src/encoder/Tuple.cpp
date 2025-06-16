@@ -22,6 +22,7 @@ Tuple::Instance::Instance(const Tuple& tuple, const std::vector<std::string>& to
 }
 
 vector<Tuple::Instance> Tuple::Instance::ComputeReductions() const {
+    if (attr_count_ <= 1) return {};
     vector<Instance> result;
     for (int i = head_attr_; i < tuple_.attribute_count(); ++i) {
         auto& inserted = result.emplace_back(*this);

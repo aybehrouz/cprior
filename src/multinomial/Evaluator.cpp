@@ -13,10 +13,8 @@
 namespace cprior::multinomial {
 using namespace cprior::encoder;
 
-void Evaluator::Eval() {
-    auto tuple_info = DataSet::ReadInfoFile("info.txt");
-
-    DataSet data(tuple_info, "data.txt");
+void Evaluator::Evaluate(const std::string& data_file_name) {
+    DataSet data(tuple_info_, data_file_name);
 
     std::random_device rd;
     std::mt19937 rnd(rd());
@@ -49,6 +47,13 @@ void Evaluator::Eval() {
         }
     }
 
-    std::cout << "accuracy:" << correct / static_cast<double>(test_set.size()) << std::endl;
+    std::cout << "Correct:" << correct << " || Wrong:" << test_set.size() - correct << std::endl;
+
+
+    if (!test_set.empty()) {
+        accuracy_ = accuracy_ * trial_count_ + correct / static_cast<double>(test_set.size());
+        ++trial_count_;
+        accuracy_ /= trial_count_;
+    }
 }
 }

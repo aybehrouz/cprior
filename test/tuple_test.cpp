@@ -21,6 +21,7 @@ TEST(TupleTest, AddsEntries) {
             .AddNominalEntry({"Answer", "yes", "no"})
             .AddNominalEntry({"Small", "one"});
 
+    tuple.close();
     Tuple::Instance sample(tuple, {"c", "2", "3", "0.3687", "-0.512", "no", "one"});
 
 
@@ -34,7 +35,7 @@ TEST(TupleTest, AddsEntries) {
     EXPECT_EQ(sample.attribute_str(5), "one");
 }
 
-TEST(TupleTest, c) {
+TEST(TupleTest, ComputesPossibleTargetInstances) {
     Tuple tuple(2);
     tuple
             .AddNominalEntry({"first", "1", "2"})
@@ -42,6 +43,7 @@ TEST(TupleTest, c) {
             .AddNominalEntry({"target", "A", "B", "C", "D", "E"})
             .AddNominalEntry({"third", "1", "2", "3", "4"});
 
+    tuple.close();
     Tuple::Instance sample(tuple, {"1", "z", "C", "3"});
 
     auto domain = sample.ComputeTargetInstances();
@@ -80,9 +82,10 @@ TEST(TupleInstanceTest, ComputesReductions) {
             .AddNominalEntry({"target", "win", "lose"})
             .AddNominalEntry({"third", "1", "2", "3", "4"});
 
+    tuple.close();
     Tuple::Instance sample(tuple, {"b", "true", "win", "4"});
 
-    EXPECT_EQ(CountReductions(sample), 7);
+    EXPECT_EQ(CountReductions(sample), 6);
 
     auto r = sample.ComputeReductions();
 
