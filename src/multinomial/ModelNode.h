@@ -20,7 +20,7 @@ template<Reducable Outcome>
 class ModelNode {
 public:
     explicit ModelNode(Variable<Outcome> observations)
-    : current_observations_(std::move(observations)) {
+        : current_observations_(std::move(observations)) {
         using namespace util;
         auto n = current_observations_.total_count() + 1;
         HpFloat log_probability;
@@ -47,18 +47,35 @@ public:
 
     [[nodiscard]]
     util::HpFloat NodeProbability() const {
+        return measure() / weight_;
+    }
+
+    [[nodiscard]]
+    util::HpFloat measure() const {
         return base_measure_ *
-            (current_observations_.total_count() + current_observations_.dim() / 2) / weight_;
+               (current_observations_.total_count() + current_observations_.dim() / 2);
     }
 
     [[nodiscard]]
     util::HpFloat TreeWeightedSum() const {
-        util::HpFloat measure = base_measure_ *
-                                (current_observations_.total_count() + current_observations_.dim() / 2);
+        auto m = measure();
         for (const auto& child: children_) {
-            measure += child.TreeWeightedSum();
+            m += child.TreeWeightedSum();
         }
-        return measure;
+        return m;
+    }
+
+    const ModelNode* MostProbableChild() const {
+        auto m = measure();
+        const auto* result = this;
+        for (const auto& child: children_) {
+            const auto* sub_tree_best = child.MostProbableChild();
+            if (m < sub_tree_best->measure()) {
+                m = sub_tree_best->measure();
+                result = sub_tree_best;
+            }
+        }
+        return result;
     }
 
     util::HpFloat TreeWeightedSumAfter(const Outcome& observation) const {
@@ -119,7 +136,7 @@ public:
     }
 
     friend std::ostream& operator<<(std::ostream& os, const ModelNode& obj) {
-        os << obj.current_observations_ << ":" << obj.NodeProbability() << " {";
+        os << obj.measure() << ":" << obj.current_observations_ << " {";
         for (const auto& child: obj.children_) os << child << "  ";
         return os << "}";
     }
@@ -161,7 +178,7 @@ private:
 
 
     static void UpdateLogPosterior_(ModelNode& root,
-                                  const util::HpFloat& weighted_sum, const util::HpFloat& coefficient) {
+                                    const util::HpFloat& weighted_sum, const util::HpFloat& coefficient) {
         auto c = root.NodeProbability();
         if (c.to_double() != 0) {
             root.expected_log_posterior_ += coefficient * c * (c.log() + root.weight_.log() - weighted_sum.log());

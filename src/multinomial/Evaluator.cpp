@@ -41,9 +41,9 @@ void Evaluator::Evaluate(const std::string& data_file_name) {
 
     auto correct_prv_value = correct_count_;
     for (const auto& test_sample: test_set) {
-        auto possible_predictions = test_sample.ComputeTargetInstances();
+        auto [possible_predictions, answer] = test_sample.ComputeTargetInstances();
         auto prediction = engine.MostProbableOutcome(possible_predictions);
-        if (prediction == 0) {
+        if (prediction == answer) {
             ++correct_count_;
         } else {
             std::cout << "Wrong prediction:" << possible_predictions[prediction] <<

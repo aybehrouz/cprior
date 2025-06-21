@@ -45,24 +45,28 @@ TEST(TupleTest, ComputesPossibleTargetInstances) {
 
     tuple.close();
     Tuple::Instance sample(tuple, {"1", "z", "C", "3"});
+    {
+        auto [domain, answer] = sample.ComputeTargetInstances();
+        ASSERT_EQ(domain.size(), 5);
+        EXPECT_EQ(domain[0], Tuple::Instance(tuple, {"1", "z", "A", "3"}));
+        EXPECT_EQ(domain[1], Tuple::Instance(tuple, {"1", "z", "B", "3"}));
+        EXPECT_EQ(domain[2], Tuple::Instance(tuple, {"1", "z", "C", "3"}));
+        EXPECT_EQ(domain[3], Tuple::Instance(tuple, {"1", "z", "D", "3"}));
+        EXPECT_EQ(domain[4], Tuple::Instance(tuple, {"1", "z", "E", "3"}));
 
-    auto domain = sample.ComputeTargetInstances();
-    ASSERT_EQ(domain.size(), 5);
-    EXPECT_EQ(domain[0], Tuple::Instance(tuple, {"1", "z", "C", "3"}));
-    EXPECT_EQ(domain[1], Tuple::Instance(tuple, {"1", "z", "A", "3"}));
-    EXPECT_EQ(domain[2], Tuple::Instance(tuple, {"1", "z", "B", "3"}));
-    EXPECT_EQ(domain[3], Tuple::Instance(tuple, {"1", "z", "D", "3"}));
-    EXPECT_EQ(domain[4], Tuple::Instance(tuple, {"1", "z", "E", "3"}));
+        EXPECT_EQ(answer, 2);
+    }
+    {
+        auto [domain, answer] = Tuple::Instance(tuple, {"1", "z", "E", "3"}).ComputeTargetInstances();
+        ASSERT_EQ(domain.size(), 5);
+        EXPECT_EQ(domain[0], Tuple::Instance(tuple, {"1", "z", "A", "3"}));
+        EXPECT_EQ(domain[1], Tuple::Instance(tuple, {"1", "z", "B", "3"}));
+        EXPECT_EQ(domain[2], Tuple::Instance(tuple, {"1", "z", "C", "3"}));
+        EXPECT_EQ(domain[3], Tuple::Instance(tuple, {"1", "z", "D", "3"}));
+        EXPECT_EQ(domain[4], Tuple::Instance(tuple, {"1", "z", "E", "3"}));
 
-    domain = Tuple::Instance(tuple, {"1", "z", "A", "3"}).ComputeTargetInstances();
-    ASSERT_EQ(domain.size(), 5);
-    EXPECT_EQ(domain[0], Tuple::Instance(tuple, {"1", "z", "A", "3"}));
-    EXPECT_EQ(domain[1], Tuple::Instance(tuple, {"1", "z", "B", "3"}));
-    EXPECT_EQ(domain[2], Tuple::Instance(tuple, {"1", "z", "C", "3"}));
-    EXPECT_EQ(domain[3], Tuple::Instance(tuple, {"1", "z", "D", "3"}));
-    EXPECT_EQ(domain[4], Tuple::Instance(tuple, {"1", "z", "E", "3"}));
-
-
+        EXPECT_EQ(answer, 4);
+    }
 }
 
 int CountReductions(const Tuple::Instance& instance) {
@@ -90,14 +94,14 @@ TEST(TupleInstanceTest, ComputesReductions) {
     auto r = sample.ComputeReductions();
 
     EXPECT_EQ(sample.num_of_reductions(), 3);
-    EXPECT_EQ(r.size(), 3);
+    ASSERT_EQ(r.size(), 3);
 
     EXPECT_EQ(r[0].dim(), 2*2*4);
     EXPECT_EQ(r[0].group_size(), 3);
 
     auto r_0 = r[0].ComputeReductions();
     EXPECT_EQ(r[0].num_of_reductions(), 2);
-    EXPECT_EQ(r_0.size(), 2);
+    ASSERT_EQ(r_0.size(), 2);
 
     EXPECT_EQ(r_0[0].dim(), 2*4);
     EXPECT_EQ(r_0[0].group_size(), 6);

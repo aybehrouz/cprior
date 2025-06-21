@@ -36,7 +36,7 @@ Tuple DataSet::ReadInfoFile(const std::string& info_file_name) {
     while (info_file >> type_specifier) {
         getline(info_file, attr_info);
         auto token_iter = sregex_token_iterator(attr_info.begin(), attr_info.end(), reg, -1);
-        vector<string> tokens(token_iter, {});
+        vector<string> tokens(++token_iter, {});
         if (type_specifier == "Nominal") {
                 result.AddNominalEntry(tokens);
         } else if (type_specifier == "Ordinal") {

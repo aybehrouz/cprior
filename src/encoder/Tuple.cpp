@@ -22,7 +22,7 @@ Tuple::Instance::Instance(const Tuple& tuple, const std::vector<std::string>& to
 }
 
 vector<Tuple::Instance> Tuple::Instance::ComputeReductions() const {
-    if (attr_count_ <= 1) return {};
+    if (attr_count_ <= min_attribute_count_) return {};
     vector<Instance> result;
     for (int i = head_attr_; i < tuple_.attribute_count(); ++i) {
         auto& inserted = result.emplace_back(*this);
@@ -32,18 +32,15 @@ vector<Tuple::Instance> Tuple::Instance::ComputeReductions() const {
     return result;
 }
 
-std::vector<Tuple::Instance> Tuple::Instance::ComputeTargetInstances() const {
+std::pair<std::vector<Tuple::Instance>, Entry::IntType> Tuple::Instance::ComputeTargetInstances() const {
     const auto& target = tuple_.entry(tuple_.index_of_target_);
     const auto target_value = IntValueOf_(target);
 
     std::vector result(target.cardinality(), *this);
-    for (Entry::IntType i = 1; i < target_value; ++i) {
-        result[i].SetValueOf_(target, i);
+    for (Entry::IntType i = 1; i <= target.cardinality(); ++i) {
+        result[i - 1].SetValueOf_(target, i);
     }
-    for (Entry::IntType i = target_value; i < target.cardinality(); ++i) {
-        result[i].SetValueOf_(target, i + 1);
-    }
-    return result;
+    return {result, target_value - 1};
 }
 
 std::string Tuple::Instance::attribute_str(int index) const {

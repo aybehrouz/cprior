@@ -68,10 +68,9 @@ public:
     public:
         Instance(const Tuple& tuple, const std::vector<std::string>& tokens);
 
-
         std::vector<Instance> ComputeReductions() const;
 
-        std::vector<Instance> ComputeTargetInstances() const;
+        std::pair<std::vector<Instance>, Entry::IntType> ComputeTargetInstances() const;
 
         std::string attribute_str(int index) const;
 
@@ -79,7 +78,7 @@ public:
 
         [[nodiscard]]
         int num_of_reductions() const {
-            return attr_count_ <= 1 ? 0 : tuple_.attribute_count() - head_attr_;
+            return attr_count_ <= min_attribute_count_ ? 0 : tuple_.attribute_count() - head_attr_;
         }
 
         [[nodiscard]]
@@ -109,6 +108,9 @@ public:
         friend std::ostream& operator<<(std::ostream& os, const Instance& obj);
 
     private:
+        static inline int min_attribute_count_ = 5;
+        static inline int max_attribute_count_ = std::numeric_limits<int>::max();
+
         const Tuple& tuple_;
         std::vector<BlockType> content_bit_blocks_;
         double group_size_ = 1;

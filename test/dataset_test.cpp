@@ -19,14 +19,24 @@ TEST(DatasetTest, ReadsFromFile) {
     EXPECT_EQ(*d.begin(), Tuple::Instance(t, {"a","female","win"}));
     EXPECT_EQ(*++d.begin(), Tuple::Instance(t, {"c","male","lose"}));
     EXPECT_EQ(*++++d.begin(), Tuple::Instance(t, {"d","female","win"}));
-
 }
 
-TEST(EvaluatorTest, CalculatesAccuracy) {
+TEST(EvaluatorTest, CalculatesAccuracy_binary3) {
     Evaluator evaluator("binary3.info");
 
-    for (int i = 0; i < 1000; ++i) {
+    for (int i = 0; i < 200; ++i) {
         evaluator.Evaluate("binary3.data");
     }
-    EXPECT_NEAR(evaluator.accuracy(), 0.97, 0.01);
+    EXPECT_NEAR(evaluator.accuracy(), 0.9, 0.01);
 }
+
+
+TEST(EvaluatorTest, CalculatesAccuracy_bin5) {
+    Evaluator bin5("bin5.info");
+
+    for (int i = 0; i < 300; ++i) {
+        bin5.Evaluate("bin5.data");
+    }
+    EXPECT_NEAR(bin5.accuracy(), 0.22, 0.01);
+}
+

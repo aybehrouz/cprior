@@ -4,10 +4,13 @@
 
 #include <gmock/gmock-matchers.h>
 #include <gtest/gtest.h>
+
+#include "encoder/DataSet.h"
 #include "multinomial/InferenceEngine.h"
 #include "mock/MockOutcome.h"
 
 using namespace cprior::multinomial;
+using namespace cprior::encoder;
 using namespace testing;
 
 TEST(InferenceEngineTest, CalculatesCentralProbabilities) {
@@ -28,3 +31,34 @@ TEST(InferenceEngineTest, CalculatesCentralProbabilities) {
 
     EXPECT_DOUBLE_EQ(engine.ComputePosterior({5})[0].to_double(), 9.1541000736655327e-12);
 }
+
+TEST(InfEngineTest, CalculatesBestOutcome) {
+    Tuple t(0);
+    t
+            .AddNominalEntry({"target", "win", "lose"})
+            .AddNominalEntry({"att1", "0", "1"})
+            .AddNominalEntry({"att2", "0", "1"})
+            .AddNominalEntry({"att3", "0", "1"});
+    t.close();
+
+    InferenceEngine<Tuple::Instance> engine;
+    engine.AddEvidence({t, {"lose", "0", "0", "0"}});
+    engine.AddEvidence({t, {"win", "0", "0", "1"}});
+    engine.AddEvidence({t, {"win", "1", "0", "0"}});
+    engine.AddEvidence({t, {"win", "1", "0", "1"}});
+
+    Tuple::Instance q(t, {"win", "0", "1", "0"});
+    auto [query, _] = q.ComputeTargetInstances();
+
+    engine.ProcessEvidence();
+
+    auto answer = engine.MostProbableOutcome(query);
+    std::cout << query.at(answer) << std::endl;
+
+    std::cout << engine.MostProbableModel() << std::endl;
+
+    //EXPECT_EQ(query.at(answer), Tuple::Instance(t, {"win", "1", "1", "1"}));
+
+
+
+                                      }

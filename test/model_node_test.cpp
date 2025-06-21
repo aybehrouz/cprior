@@ -4,12 +4,14 @@
 
 #include <gtest/gtest.h>
 
+#include "encoder/Tuple.h"
 #include "mock/MockOutcome.h"
 #include "mock/SmallOutcome.h"
 #include "multinomial/ModelNode.h"
 #include "multinomial/Variable.h"
 
 using namespace cprior::multinomial;
+using namespace cprior::encoder;
 
 TEST(ModelNodeTest, CalculatesWeightedSums) {
     Variable<MockOutcome> observations;
@@ -23,7 +25,21 @@ TEST(ModelNodeTest, CalculatesWeightedSums) {
 
     EXPECT_DOUBLE_EQ(root.TreeWeightedSum().to_double() / node_count, 1.0162793015214534e-07);
 
+    Variable<Tuple::Instance> v;
+    Tuple t(2);
+    t
+            .AddNominalEntry({"att1", "false", "true"})
+            .AddNominalEntry({"att2", "a", "b", "c"})
+            .AddNominalEntry({"target", "win", "lose"});
+    t.close();
+    v.Add({t, {"false", "a", "win"}}, 3);
+    v.Add({t, {"true", "c", "lose"}}, 2);
+
+    ModelNode r(v);
+    r.CreateSubTree();
+    EXPECT_DOUBLE_EQ(r.TreeWeightedSumAfter({t, {"false", "c", "win"}}).to_double(), 3.998320303975322e-06);
 }
+
 
 TEST(ModelNodeTest, UpdatesObservations) {
     Variable<MockOutcome> observations;

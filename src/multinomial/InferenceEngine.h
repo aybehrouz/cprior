@@ -24,7 +24,12 @@ public:
         return *this;
     }
 
+    const auto& MostProbableModel() const {
+        return *root_->MostProbableChild();
+    }
+
     int MostProbableOutcome(const std::vector<Outcome>& query) const {
+        if (root_ == nullptr) throw std::logic_error("Evidence not processed");
         int result = 0;
         util::HpFloat max = 0.0;
         for (int i = 0; i < query.size(); ++i) {
