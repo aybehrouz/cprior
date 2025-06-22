@@ -108,7 +108,7 @@ public:
         friend std::ostream& operator<<(std::ostream& os, const Instance& obj);
 
     private:
-        static inline int min_attribute_count_ = 5;
+        static inline int min_attribute_count_ = 1;
         static inline int max_attribute_count_ = std::numeric_limits<int>::max();
 
         const Tuple& tuple_;
