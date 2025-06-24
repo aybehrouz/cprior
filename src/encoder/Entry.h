@@ -115,6 +115,7 @@ public:
 
     [[nodiscard]]
     std::string StringFromIntValue(IntType value) const override {
+        if (value == 0) return "<Nil>";
         const auto ratio = static_cast<double>(value - 1) / (cardinality_ - 1);
         return std::to_string(ratio * (max_value_ - min_value_) + min_value_);
     }

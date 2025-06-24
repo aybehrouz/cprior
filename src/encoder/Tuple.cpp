@@ -4,6 +4,8 @@
 
 #include "Tuple.h"
 
+#include "util/Gamma.h"
+
 namespace cprior::encoder {
 using std::vector, std::move;
 
@@ -23,11 +25,19 @@ Tuple::Instance::Instance(const Tuple& tuple, const std::vector<std::string>& to
 
 vector<Tuple::Instance> Tuple::Instance::ComputeReductions() const {
     if (attr_count_ <= min_attribute_count_) return {};
+
     vector<Instance> result;
     for (int i = head_attr_; i < tuple_.attribute_count(); ++i) {
-        auto& inserted = result.emplace_back(*this);
-        inserted.RemoveAttribute_(i);
-        inserted.head_attr_ = i + 1;
+        auto reduced = *this;
+        reduced.RemoveAttribute_(i);
+        reduced.head_attr_ = i + 1;
+        if (attr_count_ > max_attribute_count_ + 1) {
+            for (auto && next_reductions: reduced.ComputeReductions()) {
+                result.emplace_back(std::move(next_reductions));
+            }
+        } else {
+            result.emplace_back(std::move(reduced));
+        }
     }
     return result;
 }
@@ -49,6 +59,16 @@ std::string Tuple::Instance::attribute_str(int index) const {
 
 std::string Tuple::Instance::target_str() const {
     return StringValueOf_(tuple_.entry(tuple_.index_of_target_));
+}
+
+int Tuple::Instance::num_of_reductions() const {
+    if (attr_count_ <= min_attribute_count_) return 0;
+
+    if (attr_count_ > max_attribute_count_ + 1) {
+        return int(util::Gamma::MultiChoose({max_attribute_count_, attr_count_ - max_attribute_count_}));
+    }
+
+    return tuple_.attribute_count() - head_attr_;
 }
 
 void Tuple::Instance::RemoveAttribute_(int index) {

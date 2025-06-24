@@ -64,6 +64,11 @@ public:
         return current_block_ + 1;
     }
 
+    static void ChangeMaxMinAttributes(int min, int max) {
+        min_attribute_count_ = min;
+        max_attribute_count_ = max;
+    }
+
     class Instance {
     public:
         Instance(const Tuple& tuple, const std::vector<std::string>& tokens);
@@ -77,9 +82,7 @@ public:
         std::string target_str() const;
 
         [[nodiscard]]
-        int num_of_reductions() const {
-            return attr_count_ <= min_attribute_count_ ? 0 : tuple_.attribute_count() - head_attr_;
-        }
+        int num_of_reductions() const;
 
         [[nodiscard]]
         double group_size() const {
@@ -108,9 +111,6 @@ public:
         friend std::ostream& operator<<(std::ostream& os, const Instance& obj);
 
     private:
-        static inline int min_attribute_count_ = 1;
-        static inline int max_attribute_count_ = std::numeric_limits<int>::max();
-
         const Tuple& tuple_;
         std::vector<BlockType> content_bit_blocks_;
         double group_size_ = 1;
@@ -139,6 +139,9 @@ public:
     };
 
 private:
+    static inline int min_attribute_count_ = 1;
+    static inline int max_attribute_count_ = std::numeric_limits<int>::max() - 1;
+
     std::vector<std::unique_ptr<Entry>> entries_;
     int index_of_target_;
     int current_block_ = 0;

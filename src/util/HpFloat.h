@@ -71,6 +71,10 @@ public:
         return {std::log(val_)};
     }
 
+    explicit operator int() const {
+        return static_cast<int>(std::round(val_));
+    }
+
 
     HpFloat& operator+=(const HpFloat& other) {
         val_ += other.val_;

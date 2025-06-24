@@ -70,8 +70,10 @@ TEST(TupleTest, ComputesPossibleTargetInstances) {
 }
 
 int CountReductions(const Tuple::Instance& instance) {
-    int count = instance.num_of_reductions();
-    for (const auto& r: instance.ComputeReductions()) {
+    int count = 1;
+    auto reductions = instance.ComputeReductions();
+    EXPECT_EQ(reductions.size(), instance.num_of_reductions());
+    for (const auto& r: reductions) {
         count += CountReductions(r);
     }
     std::cout << instance << std::endl;
@@ -79,34 +81,60 @@ int CountReductions(const Tuple::Instance& instance) {
 }
 
 TEST(TupleInstanceTest, ComputesReductions) {
-    Tuple tuple(2);
+    Tuple tuple(3);
     tuple
             .AddNominalEntry({"first", "a", "b", "c"})
             .AddNominalEntry({"second", "true", "false"})
+            .AddOrdinalEntry({"third", "6", "0", "1"})
             .AddNominalEntry({"target", "win", "lose"})
-            .AddNominalEntry({"third", "1", "2", "3", "4"});
+            .AddNominalEntry({"forth", "1", "2", "3", "4"})
+            .AddOrdinalEntry({"fifth", "3", "1", "4"});
 
     tuple.close();
-    Tuple::Instance sample(tuple, {"b", "true", "win", "4"});
+    Tuple::Instance sample(tuple, {"b", "true", "0.5", "win", "4", "2"});
 
-    EXPECT_EQ(CountReductions(sample), 6);
+    std::cout << "################## reductions full:" << std::endl;
+    EXPECT_EQ(CountReductions(sample), 31);
 
     auto r = sample.ComputeReductions();
 
-    EXPECT_EQ(sample.num_of_reductions(), 3);
-    ASSERT_EQ(r.size(), 3);
+    EXPECT_EQ(sample.num_of_reductions(), 5);
+    ASSERT_EQ(r.size(), sample.num_of_reductions());
 
-    EXPECT_EQ(r[0].dim(), 2*2*4);
+    EXPECT_EQ(r[0].dim(), 2*6*2*4*3);
     EXPECT_EQ(r[0].group_size(), 3);
 
     auto r_0 = r[0].ComputeReductions();
-    EXPECT_EQ(r[0].num_of_reductions(), 2);
-    ASSERT_EQ(r_0.size(), 2);
+    EXPECT_EQ(r[0].num_of_reductions(), 4);
+    ASSERT_EQ(r_0.size(), 4);
 
-    EXPECT_EQ(r_0[0].dim(), 2*4);
+    EXPECT_EQ(r_0[0].dim(), 6*2*4*3);
     EXPECT_EQ(r_0[0].group_size(), 6);
 
 
-    EXPECT_EQ(r[1].dim(), 3*2*4);
+    EXPECT_EQ(r[1].dim(), 3*6*2*4*3);
     EXPECT_EQ(r[1].group_size(), 2);
+
+
+    std::cout << "################## reductions (1, 5):" << std::endl;
+    Tuple::ChangeMaxMinAttributes(1, 5);
+    EXPECT_EQ(CountReductions(sample), 31);
+
+    std::cout << "################## reductions (1, 4):" << std::endl;
+    Tuple::ChangeMaxMinAttributes(1, 4);
+    EXPECT_EQ(CountReductions(sample), 31);
+
+    std::cout << "################## reductions (1, 3):" << std::endl;
+    Tuple::ChangeMaxMinAttributes(1, 3);
+    EXPECT_EQ(CountReductions(sample), 26);
+
+
+    std::cout << "################## reductions (1, 2):" << std::endl;
+    Tuple::ChangeMaxMinAttributes(1, 2);
+    EXPECT_EQ(CountReductions(sample), 16);
+
+
+    std::cout << "################## reductions (1, 1):" << std::endl;
+    Tuple::ChangeMaxMinAttributes(1, 1);
+    EXPECT_EQ(CountReductions(sample), 6);
 }
