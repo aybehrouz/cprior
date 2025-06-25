@@ -24,7 +24,6 @@ TEST(TupleTest, AddsEntries) {
     tuple.close();
     Tuple::Instance sample(tuple, {"c", "2", "3", "0.3687", "-0.512", "no", "one"});
 
-
     std::cout << sample << std::endl;
 
     EXPECT_EQ(sample.attribute_str(0), "c");
@@ -128,11 +127,17 @@ TEST(TupleInstanceTest, ComputesReductions) {
     Tuple::ChangeMaxMinAttributes(1, 3);
     EXPECT_EQ(CountReductions(sample), 26);
 
+    std::cout << "################## reductions (2, 3):" << std::endl;
+    Tuple::ChangeMaxMinAttributes(2, 3);
+    EXPECT_EQ(CountReductions(sample), 21);
 
     std::cout << "################## reductions (1, 2):" << std::endl;
     Tuple::ChangeMaxMinAttributes(1, 2);
     EXPECT_EQ(CountReductions(sample), 16);
 
+    std::cout << "################## reductions (2, 2):" << std::endl;
+    Tuple::ChangeMaxMinAttributes(2, 2);
+    EXPECT_EQ(CountReductions(sample), 11);
 
     std::cout << "################## reductions (1, 1):" << std::endl;
     Tuple::ChangeMaxMinAttributes(1, 1);

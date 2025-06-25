@@ -1,6 +1,6 @@
-a,   female, win
+a,   female,-1 , win
 
-c,   male , lose
-d, female, win
+c,   male , 1.1 , lose
+d,female,-0.3,win
 
 

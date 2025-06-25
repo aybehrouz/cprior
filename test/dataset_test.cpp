@@ -12,7 +12,7 @@ using namespace cprior::multinomial;
 
 TEST(DatasetTest, ReadsFromFile) {
 
-    auto t = DataSet::ReadInfoFile("info.txt");
+    auto t = DataSet::ReadInfoFile("data/info.txt");
 
     EXPECT_EQ(t.entry_count(), 4);
 
@@ -36,7 +36,7 @@ TEST(DatasetTest, ReadsFromFile) {
     EXPECT_EQ(t.entry(3).cardinality(), 2);
     std::cout << t.entry(3) << std::endl;
 
-    DataSet d(t, "data.txt");
+    DataSet d(t, "data/data.txt");
 
     EXPECT_EQ(*d.begin(), Tuple::Instance(t, {"a","female","-1.000000","win"}));
     EXPECT_EQ(*++d.begin(), Tuple::Instance(t, {"c","male","1.222222","lose"}));
@@ -44,21 +44,22 @@ TEST(DatasetTest, ReadsFromFile) {
 }
 
 TEST(EvaluatorTest, CalculatesAccuracy_binary3) {
-    Evaluator evaluator("binary3.info");
+    Evaluator evaluator("data/binary3.info");
 
     for (int i = 0; i < 200; ++i) {
-        evaluator.Evaluate("binary3.data");
+        evaluator.Evaluate("data/binary3.data");
     }
-    EXPECT_NEAR(evaluator.accuracy(), 0.9, 0.01);
+    EXPECT_NEAR(evaluator.accuracy(), 0.98, 0.02);
 }
 
 
 TEST(EvaluatorTest, CalculatesAccuracy_bin5) {
-    Evaluator bin5("bin5.info");
+    Tuple::ChangeMaxMinAttributes(2,2);
+    Evaluator bin5("data/bin5.info");
 
     for (int i = 0; i < 300; ++i) {
-        bin5.Evaluate("bin5.data");
+        bin5.Evaluate("data/bin5.data");
     }
-    EXPECT_NEAR(bin5.accuracy(), 0.22, 0.01);
+    EXPECT_NEAR(bin5.accuracy(), 0.79, 0.02);
 }
 

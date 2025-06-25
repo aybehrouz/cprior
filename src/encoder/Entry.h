@@ -5,9 +5,6 @@
 #ifndef CPRIOR_ATTRIBUTE_H
 #define CPRIOR_ATTRIBUTE_H
 #include <bit>
-#include <cmath>
-#include <iostream>
-#include <ostream>
 #include <regex>
 #include <string>
 
@@ -25,16 +22,15 @@ public:
     }
 
     [[nodiscard]]
+    virtual std::string to_string() const = 0;
+
+    [[nodiscard]]
     virtual IntType IntValueFromString(const std::string& text) const = 0;
 
     [[nodiscard]]
     virtual std::string StringFromIntValue(IntType value) const = 0;
 
-    void set_position(unsigned block_index, unsigned block_offset) {
-        negative_mask_ = ~(((static_cast<IntType>(1) << bit_len_) - 1) << block_offset);
-        block_index_ = block_index;
-        block_offset_ = block_offset;
-    }
+    void set_position(unsigned block_index, unsigned block_offset);
 
     [[nodiscard]] unsigned cardinality() const {
         return cardinality_;
@@ -56,15 +52,7 @@ public:
         return block_offset_;
     }
 
-    friend std::ostream& operator<<(std::ostream& os, const Entry& obj) {
-        return os
-               << "name_: " << obj.name_
-               << " cardinality_: " << obj.cardinality_
-               << " bit_len_: " << obj.bit_len_
-               << " negative_mask_: " << std::bitset<64>(obj.negative_mask_)
-               << " block_index_: " << obj.block_index_
-               << " block_offset_: " << obj.block_offset_;
-    }
+    friend std::ostream& operator<<(std::ostream& os, const Entry& obj);
 
 protected:
     std::string name_;
@@ -77,15 +65,9 @@ protected:
 
 class NominalEntry : public Entry {
 public:
-    explicit NominalEntry(std::vector<std::string> tokens)
-       : Entry(std::move(tokens.at(0)), tokens.size() - 1) {
-       for (int i = 1; i < tokens.size(); ++i) {
-           auto [new_pair, inserted] =
-                    value_map_.try_emplace(std::move(tokens[i]), value_map_.size() + 1);
-           if (!inserted) throw std::invalid_argument("category already exists");
-           category_map_.emplace_back(new_pair->first);
-       }
-    }
+    explicit NominalEntry(std::vector<std::string> tokens);
+
+    std::string to_string() const override;
 
     IntType IntValueFromString(const std::string& text) const override {
         return value_map_.at(text);
@@ -108,17 +90,13 @@ public:
     }
 
     [[nodiscard]]
-    IntType IntValueFromString(const std::string& text) const override {
-        const auto ratio = (std::stod(text) - min_value_) / (max_value_ - min_value_);
-        return static_cast<IntType>(std::round(ratio * (cardinality_ - 1))) + 1;
-    }
+    std::string to_string() const override;
 
     [[nodiscard]]
-    std::string StringFromIntValue(IntType value) const override {
-        if (value == 0) return "<Nil>";
-        const auto ratio = static_cast<double>(value - 1) / (cardinality_ - 1);
-        return std::to_string(ratio * (max_value_ - min_value_) + min_value_);
-    }
+    IntType IntValueFromString(const std::string& text) const override;
+
+    [[nodiscard]]
+    std::string StringFromIntValue(IntType value) const override;
 
 private:
     double min_value_;

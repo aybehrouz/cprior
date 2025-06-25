@@ -5,6 +5,8 @@ add_compile_options(-Wall -Wno-sign-compare -D_GLIBCXX_DEBUG)
 
 enable_testing()
 
+file(COPY "data/" DESTINATION "data/")
+
 # adding the Google_Tests_run target
 add_executable(full_test
         inf_engine_test.cpp
