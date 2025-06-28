@@ -13,16 +13,14 @@ add_executable(full_test
         ../src/util/Gamma.cpp
         ../src/util/ConstantSumRange.cpp
         model_node_test.cpp
-        mock/SmallOutcome.h
         ../src/encoder/Entry.cpp
-        ../src/encoder/Entry.h
         ../src/encoder/Tuple.cpp
         tuple_test.cpp
         ../src/encoder/DataSet.cpp
-        ../src/encoder/DataSet.h
         dataset_test.cpp
         ../src/multinomial/Evaluator.cpp
-        ../src/multinomial/Evaluator.h
+        ../src/encoder/DataGenerator.cpp
+        ../src/encoder/DataGenerator.h
 )
 
 # linking Google_Tests_run with libraries

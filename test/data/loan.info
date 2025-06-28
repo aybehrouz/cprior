@@ -1,0 +1,9 @@
+7
+Ordinal age, 7, 24, 55
+Nominal gender, Female, Male
+Nominal occupation, Accountant, Analyst, Architect, Artist, Banker, Chef, Consultant, Dentist, Designer, Doctor, Editor, Electrician, Engineer, HR, IT, Lawyer, Manager, Marketing, Musician, Nurse, Pharmacist, Photographer, Pilot, Professor, Programmer, Psychologist, Realtor, Receptionist, Researcher, Sales, Salesman, Server, Software, Student, Stylist, Teacher, Veterinarian, Writer
+Nominal education_level, Associate's, Bachelor's, Doctoral, HighSchool, Master's
+Nominal marital_status, Married, Single
+Ordinal income, 10, 25000, 180000
+Ordinal credit_score, 5, 560, 830
+Nominal loan_status, Approved, Denied

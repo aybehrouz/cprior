@@ -7,8 +7,8 @@
 #include <fstream>
 #include <iostream>
 #include <regex>
+#include <set>
 #include <tuple>
-#include <gtest/internal/gtest-port.h>
 
 #include "Tuple.h"
 
@@ -16,9 +16,11 @@ namespace cprior::encoder {
 
 class DataSet {
 public:
-    explicit DataSet(const Tuple& tuple, const std::string& data_file_name);
+    explicit DataSet(std::set<int> ignored_entries = {}) : ignored_entries_(std::move(ignored_entries)) {};
 
-    static Tuple ReadInfoFile(const std::string& info_file_name);
+    Tuple ReadInfoFile(const std::string& info_file_name);
+
+    void ReadDataFile(const Tuple& tuple, const std::string& data_file_name);
 
     auto begin() {
         return data_.begin();
@@ -28,7 +30,17 @@ public:
         return data_.end();
     }
 
+    auto begin() const {
+        return data_.cbegin();
+    }
+
+
+    auto end() const {
+        return data_.cend();
+    }
+
 private:
+    std::set<int> ignored_entries_;
     std::vector<Tuple::Instance> data_{};
 };
 

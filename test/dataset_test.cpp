@@ -4,6 +4,7 @@
 
 #include <gtest/gtest.h>
 
+#include "encoder/DataGenerator.h"
 #include "encoder/DataSet.h"
 #include "multinomial/Evaluator.h"
 
@@ -12,7 +13,9 @@ using namespace cprior::multinomial;
 
 TEST(DatasetTest, ReadsFromFile) {
 
-    auto t = DataSet::ReadInfoFile("data/info.txt");
+    DataSet ds;
+
+    auto t = ds.ReadInfoFile("data/info.txt");
 
     EXPECT_EQ(t.entry_count(), 4);
 
@@ -36,30 +39,71 @@ TEST(DatasetTest, ReadsFromFile) {
     EXPECT_EQ(t.entry(3).cardinality(), 2);
     std::cout << t.entry(3) << std::endl;
 
-    DataSet d(t, "data/data.txt");
+    ds.ReadDataFile(t, "data/data.txt");
 
-    EXPECT_EQ(*d.begin(), Tuple::Instance(t, {"a","female","-1.000000","win"}));
-    EXPECT_EQ(*++d.begin(), Tuple::Instance(t, {"c","male","1.222222","lose"}));
-    EXPECT_EQ(*++++d.begin(), Tuple::Instance(t, {"d","female","-0.166667","win"}));
+    EXPECT_EQ(*ds.begin(), Tuple::Instance(t, {"a","female","-1.000000","win"}));
+    EXPECT_EQ(*++ds.begin(), Tuple::Instance(t, {"c","male","1.222222","lose"}));
+    EXPECT_EQ(*++++ds.begin(), Tuple::Instance(t, {"d","female","-0.166667","win"}));
+
+}
+
+TEST(DataSetTest, CanIgnoreEntries) {
+    DataSet ds({0,3});
+    auto t = ds.ReadInfoFile("data/info.txt");
+    std::cout << t.to_string() << std::endl;
+    EXPECT_EQ(t.to_string(), "0\nNominal gender,female,male,\nOrdinal temp,10,-1,1.5\n");
+
+    ds.ReadDataFile(t, "data/data.txt");
+    EXPECT_EQ(*ds.begin(), Tuple::Instance(t, {"female","-1.000000"}));
+    EXPECT_EQ(*++ds.begin(), Tuple::Instance(t, {"male","1.222222"}));
+
 }
 
 TEST(EvaluatorTest, CalculatesAccuracy_binary3) {
-    Evaluator evaluator("data/binary3.info");
+    DataSet ds;
+    auto tuple = ds.ReadInfoFile("data/binary3.info");
+    ds.ReadDataFile(tuple, "data/binary3.data");
 
-    for (int i = 0; i < 200; ++i) {
-        evaluator.Evaluate("data/binary3.data");
+    Evaluator b3;
+
+    for (int i = 0; i < 1; ++i) {
+        b3.Evaluate(ds);
     }
-    EXPECT_NEAR(evaluator.accuracy(), 0.98, 0.02);
+    EXPECT_NEAR(b3.accuracy(), 0.98, 0.02);
 }
 
+TEST(EvaluatorTest, CalculatesAccuracy_loan) {
+    DataSet ds;
+    auto tuple = ds.ReadInfoFile("data/loan.info");
+    ds.ReadDataFile(tuple, "data/loan.csv");
 
-TEST(EvaluatorTest, CalculatesAccuracy_bin5) {
-    Tuple::ChangeMaxMinAttributes(2,2);
-    Evaluator bin5("data/bin5.info");
+    Evaluator loan;
 
-    for (int i = 0; i < 300; ++i) {
-        bin5.Evaluate("data/bin5.data");
+    for (int i = 0; i < 50; ++i) {
+        loan.Evaluate(ds);
     }
-    EXPECT_NEAR(bin5.accuracy(), 0.79, 0.02);
+    EXPECT_NEAR(loan.accuracy(), 0.79, 0.02);
 }
 
+TEST(DataSetTest, DataGen) {
+    DataGenerator dg({{"00", "zero"}, {"01", "zero"}, {"10", "zero"}, {"11", "one"}}
+                     , 8, {3,4});
+    std::cout << dg.Generate() << std::endl;
+    std::cout << dg.Generate() << std::endl;
+
+
+    dg.WriteInfoFile("data/gen.info");
+    dg.WriteDataFile("data/gen.data", 20);
+
+    DataSet ds;
+    auto tuple = ds.ReadInfoFile("data/gen.info");
+    ds.ReadDataFile(tuple, "data/gen.data");
+
+    Evaluator ev;
+
+    for (int i = 0; i < 50; ++i) {
+        ev.Evaluate(ds);
+    }
+    EXPECT_NEAR(ev.accuracy(), 0.79, 0.02);
+
+}

@@ -6,6 +6,7 @@
 #define CPRIOR_ENCODER_TUPLE_H
 
 #include <utility>
+#include <limits>
 
 #include "Entry.h"
 
@@ -53,6 +54,8 @@ public:
         return *entries_[index];
     }
 
+    std::string to_string() const;
+
     [[nodiscard]]
     const Entry& attribute(int index) const {
         index = index >= index_of_target_ ? index + 1 : index;
@@ -77,9 +80,13 @@ public:
 
         std::pair<std::vector<Instance>, Entry::IntType> ComputeTargetInstances() const;
 
-        std::string attribute_str(int index) const;
+        std::string attribute_str(int index) const {
+            return StringValueOf_(tuple_.attribute(index));
+        }
 
-        std::string target_str() const;
+        std::string target_str() const {
+            return StringValueOf_(tuple_.entry(tuple_.index_of_target_));
+        }
 
         [[nodiscard]]
         int num_of_reductions() const;

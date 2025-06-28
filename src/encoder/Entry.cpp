@@ -26,14 +26,14 @@ NominalEntry::NominalEntry(std::vector<std::string> tokens): Entry(std::move(tok
 
 std::string NominalEntry::to_string() const {
     std::stringstream ss;
-    ss << "Nominal " << name_ << ", ";
+    ss << "Nominal " << name_ << ",";
     for (const auto& cat: value_map_ | std::views::keys) ss << cat << ",";
     return ss.str();
 }
 
 std::string OrdinalEntry::to_string() const {
     std::stringstream ss;
-    ss << "Ordinal " << name_ << ", " << cardinality_ << ", " << min_value_ << ", " << max_value_;
+    ss << "Ordinal " << name_ << "," << cardinality_ << "," << min_value_ << "," << max_value_;
     return ss.str();
 }
 

@@ -16,7 +16,7 @@ Tuple::Instance::Instance(const Tuple& tuple, const std::vector<std::string>& to
       attr_count_(tuple.attribute_count()) {
     if (!tuple.closed_) throw std::runtime_error("Tuple is not closed");
     if (tokens.size() != tuple_.entry_count()) {
-        throw std::invalid_argument("Wrong number of tokens");
+        throw std::invalid_argument("Wrong number of tokens: " + std::to_string(tokens.size()));
     }
     for (int i = 0; i < tuple_.entry_count(); ++i) {
         SetValueOf_(tuple.entry(i), tokens[i]);
@@ -53,14 +53,6 @@ std::pair<std::vector<Tuple::Instance>, Entry::IntType> Tuple::Instance::Compute
     return {result, target_value - 1};
 }
 
-std::string Tuple::Instance::attribute_str(int index) const {
-    return StringValueOf_(tuple_.attribute(index));
-}
-
-std::string Tuple::Instance::target_str() const {
-    return StringValueOf_(tuple_.entry(tuple_.index_of_target_));
-}
-
 int Tuple::Instance::num_of_reductions() const {
     if (attr_count_ <= min_attribute_count_) return 0;
 
@@ -92,6 +84,13 @@ Tuple& Tuple::AddEntry(std::unique_ptr<Entry> e) {
     }
     dim_ *= entry.cardinality();
     return *this;
+}
+
+std::string Tuple::to_string() const {
+    std::stringstream ss;
+    ss << index_of_target_ << std::endl;
+    for (const auto& entry: entries_) ss << entry->to_string() << std::endl;
+    return ss.str();
 }
 
 std::ostream& operator<<(std::ostream& os, const Tuple::Instance& obj) {
