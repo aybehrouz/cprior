@@ -10,10 +10,10 @@ using namespace cprior::encoder;
 int main() {
     const std::set target_attributes{3,5};
     const std::string info = "gen.info", data = "gen.data";
-    constexpr int attr_count = 8, data_set_size = 20;
+    constexpr int attr_count = 14, data_set_size = 20;
     constexpr int trial_count = 200;
 
-    DataGenerator dg({{"00", "one"}, {"01", "zero"}, {"10", "zero"}, {"11", "one"}}
+    DataGenerator dg({{"00", "A"}, {"01", "B"}, {"10", "C"}, {"11", "D"}}
                      , attr_count, target_attributes);
 
     dg.WriteInfoFile(info);

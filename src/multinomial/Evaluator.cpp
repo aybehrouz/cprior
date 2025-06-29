@@ -25,10 +25,10 @@ pair<size_t, size_t> Evaluator::Evaluate() {
     for (auto sample: data_) {
         if (select_train_(rnd_)) {
             ++train_size;
-            //std::cout << "train:" << sample << std::endl;
+            std::cout << "train:" << sample << std::endl;
             engine.AddEvidence(std::move(sample));
         } else {
-            //std::cout << "test:" << sample << std::endl;
+            std::cout << "test:" << sample << std::endl;
             test_set.emplace_back(std::move(sample));
         }
     }
@@ -48,10 +48,21 @@ pair<size_t, size_t> Evaluator::Evaluate() {
         }
     }
 
-    std::cout << "Correct:" << correct_count <<
-            "\tWrong:" << test_set.size() - correct_count << std::endl;
+    // std::cout << "Correct:" << correct_count << "\tWrong:" << test_set.size() - correct_count << std::endl;
 
     return {correct_count, test_set.size()};
+}
+
+void Evaluator::Answer(const DataSet& query) {
+    InferenceEngine<Tuple::Instance> engine;
+    for (auto sample: data_) engine.AddEvidence(std::move(sample));
+    engine.ProcessEvidence();
+    for (const auto& query_sample: query) {
+        auto [possible_predictions, _] = query_sample.ComputeTargetInstances();
+        auto prediction = engine.MostProbableOutcome(possible_predictions);
+
+        std::cout << "Prediction:" << possible_predictions[prediction] << std::endl;
+    }
 }
 
 vector<double> Evaluator::EvaluateIncremental(const string& info_file_name,
@@ -68,7 +79,7 @@ vector<double> Evaluator::EvaluateIncremental(const string& info_file_name,
     auto target = header_tuple.target();
 
     full_data.ReadDataFile(header_tuple, data_file_name);
-    result.emplace_back(Evaluator(full_data).Evaluate(trials_count));
+    result.push_back(Evaluator(full_data).Evaluate(trials_count));
 
     for (int i = 0; i < entry_count; ++i) {
         if (target_attributes.contains(i) || target == i) continue;
@@ -78,7 +89,7 @@ vector<double> Evaluator::EvaluateIncremental(const string& info_file_name,
         auto tuple = partial_data.ReadInfoFile(info_file_name);
         partial_data.ReadDataFile(tuple, data_file_name);
 
-        result.emplace_back(Evaluator(partial_data).Evaluate(trials_count));
+        result.push_back(Evaluator(partial_data).Evaluate(trials_count));
     }
     return result;
 }

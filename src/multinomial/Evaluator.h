@@ -18,6 +18,8 @@ public:
 
     std::pair<size_t, size_t> Evaluate();
 
+    void Answer(const encoder::DataSet& query);
+
     double Evaluate(int trial_count) {
         std::size_t total_correct = 0, total_test = 0;
         for (int i = 0; i < trial_count; ++i) {
