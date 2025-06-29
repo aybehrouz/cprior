@@ -14,7 +14,7 @@ namespace cprior::util {
 
 class Gamma {
 public:
-    static constexpr int kCacheSize = 1024;
+    static constexpr int kCacheSize = 1 << 12;
 
     static double lgammaLimit(double z);
 

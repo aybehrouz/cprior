@@ -64,12 +64,7 @@ TEST(EvaluatorTest, CalculatesAccuracy_binary3) {
     auto tuple = ds.ReadInfoFile("data/binary3.info");
     ds.ReadDataFile(tuple, "data/binary3.data");
 
-    Evaluator b3;
-
-    for (int i = 0; i < 1; ++i) {
-        b3.Evaluate(ds);
-    }
-    EXPECT_NEAR(b3.accuracy(), 0.98, 0.02);
+    EXPECT_NEAR(Evaluator(ds).Evaluate(50), 0.98, 0.02);
 }
 
 TEST(EvaluatorTest, CalculatesAccuracy_loan) {
@@ -77,17 +72,12 @@ TEST(EvaluatorTest, CalculatesAccuracy_loan) {
     auto tuple = ds.ReadInfoFile("data/loan.info");
     ds.ReadDataFile(tuple, "data/loan.csv");
 
-    Evaluator loan;
-
-    for (int i = 0; i < 50; ++i) {
-        loan.Evaluate(ds);
-    }
-    EXPECT_NEAR(loan.accuracy(), 0.79, 0.02);
+    EXPECT_NEAR(Evaluator(ds).Evaluate(50), 0.98, 0.02);
 }
 
 TEST(DataSetTest, DataGen) {
     DataGenerator dg({{"00", "zero"}, {"01", "zero"}, {"10", "zero"}, {"11", "one"}}
-                     , 8, {3,4});
+                     , 8, {3, 4});
     std::cout << dg.Generate() << std::endl;
     std::cout << dg.Generate() << std::endl;
 
@@ -99,11 +89,24 @@ TEST(DataSetTest, DataGen) {
     auto tuple = ds.ReadInfoFile("data/gen.info");
     ds.ReadDataFile(tuple, "data/gen.data");
 
-    Evaluator ev;
+    EXPECT_NEAR(Evaluator(ds).Evaluate(50), 0.79, 0.02);
+}
 
-    for (int i = 0; i < 50; ++i) {
-        ev.Evaluate(ds);
-    }
-    EXPECT_NEAR(ev.accuracy(), 0.79, 0.02);
 
+TEST(EvaluatorTest, EvaluatesRemovingAttributes) {
+    const std::set target_attributes{3,5};
+    const std::string info = "data/gen.info", data = "data/gen.data";
+    constexpr int attr_count = 8, data_set_size = 20;
+    constexpr int trial_count = 200;
+
+
+    DataGenerator dg({{"00", "one"}, {"01", "zero"}, {"10", "zero"}, {"11", "one"}}
+                     , attr_count, target_attributes);
+
+    dg.WriteInfoFile(info);
+    dg.WriteDataFile(data, data_set_size);
+
+    auto acc = Evaluator::EvaluateIncremental(info, data, target_attributes, trial_count);
+
+   EXPECT_EQ(acc, std::vector({0.2,0.3}));
 }

@@ -53,16 +53,6 @@ std::pair<std::vector<Tuple::Instance>, Entry::IntType> Tuple::Instance::Compute
     return {result, target_value - 1};
 }
 
-int Tuple::Instance::num_of_reductions() const {
-    if (attr_count_ <= min_attribute_count_) return 0;
-
-    if (attr_count_ > max_attribute_count_ + 1) {
-        return int(util::Gamma::MultiChoose({max_attribute_count_, attr_count_ - max_attribute_count_}));
-    }
-
-    return tuple_.attribute_count() - head_attr_;
-}
-
 void Tuple::Instance::RemoveAttribute_(int index) {
     const auto& attr = tuple_.attribute(index);
     content_bit_blocks_[attr.block_index()] &= attr.negative_mask();

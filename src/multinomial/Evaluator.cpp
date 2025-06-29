@@ -13,17 +13,17 @@
 namespace cprior::multinomial {
 using namespace cprior::encoder;
 
-void Evaluator::Evaluate(const DataSet& data) {
-    std::random_device rd;
-    std::default_random_engine rnd(rd());
-    std::discrete_distribution select({30, 70});
+using std::pair, std::set, std::vector, std::string;
 
+pair<size_t, size_t> Evaluator::Evaluate() {
     InferenceEngine<Tuple::Instance> engine;
-    std::vector<Tuple::Instance> test_set;
+    vector<Tuple::Instance> test_set;
 
-    int train_size = 0;
-    for (auto sample: data) {
-        if (select(rnd)) {
+
+    size_t correct_count = 0;
+    size_t train_size = 0;
+    for (auto sample: data_) {
+        if (select_train_(rnd_)) {
             ++train_size;
             //std::cout << "train:" << sample << std::endl;
             engine.AddEvidence(std::move(sample));
@@ -33,25 +33,53 @@ void Evaluator::Evaluate(const DataSet& data) {
         }
     }
 
-    if (train_size == 0) return;
+    if (train_size == 0) return {0, 0};
 
     engine.ProcessEvidence();
 
-    auto correct_prv_value = total_correct_count_;
     for (const auto& test_sample: test_set) {
         auto [possible_predictions, answer] = test_sample.ComputeTargetInstances();
         auto prediction = engine.MostProbableOutcome(possible_predictions);
         if (prediction == answer) {
-            ++total_correct_count_;
+            ++correct_count;
         } else {
             std::cout << "Wrong prediction:" << possible_predictions[prediction] <<
                     "instead of " << test_sample << std::endl;
         }
     }
 
-    total_test_count_ += test_set.size();
+    std::cout << "Correct:" << correct_count <<
+            "\tWrong:" << test_set.size() - correct_count << std::endl;
 
-    std::cout <<"Correct:" << total_correct_count_ - correct_prv_value <<
-        "\tWrong:" << test_set.size() - (total_correct_count_ - correct_prv_value) << std::endl;
+    return {correct_count, test_set.size()};
+}
+
+vector<double> Evaluator::EvaluateIncremental(const string& info_file_name,
+                                              const string& data_file_name,
+                                              const set<int>& target_attributes,
+                                              int trials_count) {
+    vector<double> result;
+    set<int> removed_attributes;
+
+    DataSet full_data;
+    auto header_tuple = full_data.ReadInfoFile(info_file_name);
+
+    auto entry_count = header_tuple.entry_count();
+    auto target = header_tuple.target();
+
+    full_data.ReadDataFile(header_tuple, data_file_name);
+    result.emplace_back(Evaluator(full_data).Evaluate(trials_count));
+
+    for (int i = 0; i < entry_count; ++i) {
+        if (target_attributes.contains(i) || target == i) continue;
+
+        removed_attributes.insert(i);
+        DataSet partial_data(removed_attributes);
+        auto tuple = partial_data.ReadInfoFile(info_file_name);
+        partial_data.ReadDataFile(tuple, data_file_name);
+
+        result.emplace_back(Evaluator(partial_data).Evaluate(trials_count));
+    }
+    return result;
 }
 }

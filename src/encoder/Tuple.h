@@ -9,6 +9,7 @@
 #include <limits>
 
 #include "Entry.h"
+#include "util/Gamma.h"
 
 namespace cprior::encoder {
 class Tuple {
@@ -54,6 +55,11 @@ public:
         return *entries_[index];
     }
 
+    [[nodiscard]]
+    int target() const {
+        return index_of_target_;
+    }
+
     std::string to_string() const;
 
     [[nodiscard]]
@@ -89,7 +95,15 @@ public:
         }
 
         [[nodiscard]]
-        int num_of_reductions() const;
+        int num_of_reductions() const {
+            if (attr_count_ <= min_attribute_count_) return 0;
+
+            if (attr_count_ > max_attribute_count_ + 1) {
+                return int(util::Gamma::MultiChoose({max_attribute_count_, attr_count_ - max_attribute_count_}));
+            }
+
+            return tuple_.attribute_count() - head_attr_;
+        }
 
         [[nodiscard]]
         double group_size() const {
