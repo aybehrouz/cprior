@@ -42,12 +42,12 @@ public:
 
     Tuple& AddEntry(std::unique_ptr<Entry> e);
 
-    Tuple& AddNominalEntry(std::vector<std::string> tokens) {
-        return this->AddEntry(std::make_unique<NominalEntry>(std::move(tokens)));
+    Tuple& AddNominalEntry(std::string name, std::vector<std::string> categories) {
+        return this->AddEntry(std::make_unique<NominalEntry>(std::move(name), std::move(categories)));
     }
 
-    Tuple& AddOrdinalEntry(std::vector<std::string> tokens) {
-        return this->AddEntry(std::make_unique<OrdinalEntry>(std::move(tokens)));
+    Tuple& AddOrdinalEntry(std::string name, unsigned cardinality, double min, double max) {
+        return this->AddEntry(std::make_unique<OrdinalEntry>(std::move(name), cardinality, min, max));
     }
 
     [[nodiscard]]
@@ -56,7 +56,12 @@ public:
     }
 
     [[nodiscard]]
-    int target() const {
+    const Entry& target() const {
+        return *entries_[index_of_target_];
+    }
+
+    [[nodiscard]]
+    int index_of_target() const {
         return index_of_target_;
     }
 
@@ -73,9 +78,12 @@ public:
         return current_block_ + 1;
     }
 
-    static void ChangeMaxMinAttributes(int min, int max) {
-        min_attribute_count_ = min;
-        max_attribute_count_ = max;
+    static void ChangeMaxAttributes(int max = std::numeric_limits<int>::max() - 1) {
+        max_attributes_ = max;
+    }
+
+    static void ChangeMinAttributes(int min = 1) {
+        min_attributes_ = min;
     }
 
     class Instance {
@@ -90,16 +98,32 @@ public:
             return StringValueOf_(tuple_.attribute(index));
         }
 
+        std::string attribute_str() const;
+
         std::string target_str() const {
-            return StringValueOf_(tuple_.entry(tuple_.index_of_target_));
+            return StringValueOf_(tuple_.target());
+        }
+
+        [[nodiscard]]
+        auto target_int() const {
+            return IntValueOf_(tuple_.target());
+        }
+
+        [[nodiscard]]
+        auto target_cardinality() const {
+            return tuple_.target().cardinality();
+        }
+
+        void set_target(Entry::IntType value) {
+            SetValueOf_(tuple_.target(), value);
         }
 
         [[nodiscard]]
         int num_of_reductions() const {
-            if (attr_count_ <= min_attribute_count_) return 0;
+            if (attr_count_ <= min_attributes_) return 0;
 
-            if (attr_count_ > max_attribute_count_ + 1) {
-                return int(util::Gamma::MultiChoose({max_attribute_count_, attr_count_ - max_attribute_count_}));
+            if (attr_count_ > max_attributes_ + 1) {
+                return int(util::Gamma::MultiChoose({max_attributes_, attr_count_ - max_attributes_}));
             }
 
             return tuple_.attribute_count() - head_attr_;
@@ -108,6 +132,11 @@ public:
         [[nodiscard]]
         double group_size() const {
             return group_size_;
+        }
+
+        [[nodiscard]]
+       int attribute_count() const {
+            return attr_count_;
         }
 
         [[nodiscard]]
@@ -160,8 +189,8 @@ public:
     };
 
 private:
-    static inline int min_attribute_count_ = 1;
-    static inline int max_attribute_count_ = std::numeric_limits<int>::max() - 1;
+    static inline int min_attributes_ = 1;
+    static inline int max_attributes_ = std::numeric_limits<int>::max() - 1;
 
     std::vector<std::unique_ptr<Entry>> entries_;
     int index_of_target_;

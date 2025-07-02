@@ -7,7 +7,7 @@
 #include "util/Gamma.h"
 
 namespace cprior::encoder {
-using std::vector, std::move;
+using std::vector, std::move, std::stringstream;
 
 Tuple::Instance::Instance(const Tuple& tuple, const std::vector<std::string>& tokens)
     : tuple_(tuple),
@@ -24,14 +24,14 @@ Tuple::Instance::Instance(const Tuple& tuple, const std::vector<std::string>& to
 }
 
 vector<Tuple::Instance> Tuple::Instance::ComputeReductions() const {
-    if (attr_count_ <= min_attribute_count_) return {};
+    if (attr_count_ <= min_attributes_) return {};
 
     vector<Instance> result;
     for (int i = head_attr_; i < tuple_.attribute_count(); ++i) {
         auto reduced = *this;
         reduced.RemoveAttribute_(i);
         reduced.head_attr_ = i + 1;
-        if (attr_count_ > max_attribute_count_ + 1) {
+        if (attr_count_ > max_attributes_ + 1) {
             for (auto && next_reductions: reduced.ComputeReductions()) {
                 result.emplace_back(std::move(next_reductions));
             }
@@ -51,6 +51,14 @@ std::pair<std::vector<Tuple::Instance>, Entry::IntType> Tuple::Instance::Compute
         result[i - 1].SetValueOf_(target, i);
     }
     return {result, target_value - 1};
+}
+
+std::string Tuple::Instance::attribute_str() const {
+    if (attribute_count() == 0) return {};
+    stringstream ss;
+    ss << attribute_str(0);
+    for (int i = 1; i < this->attribute_count(); ++i) ss << "," << attribute_str(i);
+    return ss.str();
 }
 
 void Tuple::Instance::RemoveAttribute_(int index) {
@@ -77,16 +85,14 @@ Tuple& Tuple::AddEntry(std::unique_ptr<Entry> e) {
 }
 
 std::string Tuple::to_string() const {
-    std::stringstream ss;
+    stringstream ss;
     ss << index_of_target_ << std::endl;
     for (const auto& entry: entries_) ss << entry->to_string() << std::endl;
     return ss.str();
 }
 
 std::ostream& operator<<(std::ostream& os, const Tuple::Instance& obj) {
-    os << "(";
-    for (int i = 0; i < obj.tuple_.attribute_count(); ++i) os << obj.attribute_str(i) << ",";
-    os << ") -> <" << obj.target_str() << "> ";
+    os << "(" << obj.attribute_str() << ") -> <" << obj.target_str() << "> ";
     os << "dim:" << obj.dim() << " g:" << obj.group_size() << " ##";
     for (const auto attr: obj.content_bit_blocks_) os << std::bitset<64>(attr) << "|";
     return os;

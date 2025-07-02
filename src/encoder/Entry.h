@@ -65,7 +65,7 @@ protected:
 
 class NominalEntry : public Entry {
 public:
-    explicit NominalEntry(std::vector<std::string> tokens);
+    explicit NominalEntry(std::string name, std::vector<std::string> categories);
 
     std::string to_string() const override;
 
@@ -84,9 +84,10 @@ private:
 
 class OrdinalEntry : public Entry {
 public:
-    explicit OrdinalEntry(std::vector<std::string> tokens)
-        : Entry(std::move(tokens.at(0)), std::stoi(tokens.at(1))),
-          min_value_(std::stod(tokens.at(2))), max_value_(std::stod(tokens.at(3))) {
+    OrdinalEntry(std::string name, unsigned cardinality, double min_value, double max_value)
+        : Entry(std::move(name), cardinality),
+          min_value_(min_value),
+          max_value_(max_value) {
     }
 
     [[nodiscard]]

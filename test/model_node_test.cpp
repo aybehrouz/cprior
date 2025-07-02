@@ -5,8 +5,8 @@
 #include <gtest/gtest.h>
 
 #include "encoder/Tuple.h"
-#include "mock/MockOutcome.h"
-#include "mock/SmallOutcome.h"
+#include "tools/MockOutcome.h"
+#include "tools/SmallOutcome.h"
 #include "multinomial/ModelNode.h"
 #include "multinomial/Variable.h"
 
@@ -28,9 +28,9 @@ TEST(ModelNodeTest, CalculatesWeightedSums) {
     Variable<Tuple::Instance> v;
     Tuple t(2);
     t
-            .AddNominalEntry({"att1", "false", "true"})
-            .AddNominalEntry({"att2", "a", "b", "c"})
-            .AddNominalEntry({"target", "win", "lose"});
+            .AddNominalEntry("att1", {"false", "true"})
+            .AddNominalEntry("att2", {"a", "b", "c"})
+            .AddNominalEntry("target", {"win", "lose"});
     t.close();
     v.Add({t, {"false", "a", "win"}}, 3);
     v.Add({t, {"true", "c", "lose"}}, 2);

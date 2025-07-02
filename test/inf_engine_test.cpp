@@ -7,7 +7,7 @@
 
 #include "encoder/DataSet.h"
 #include "multinomial/InferenceEngine.h"
-#include "mock/MockOutcome.h"
+#include "tools/MockOutcome.h"
 
 using namespace cprior::multinomial;
 using namespace cprior::encoder;
@@ -35,10 +35,10 @@ TEST(InferenceEngineTest, CalculatesCentralProbabilities) {
 TEST(InfEngineTest, CalculatesBestOutcome) {
     Tuple t(0);
     t
-            .AddNominalEntry({"target", "win", "lose"})
-            .AddNominalEntry({"att1", "0", "1"})
-            .AddNominalEntry({"att2", "0", "1"})
-            .AddNominalEntry({"att3", "0", "1"});
+            .AddNominalEntry("target", {"win", "lose"})
+            .AddNominalEntry("att1", {"0", "1"})
+            .AddNominalEntry("att2", {"0", "1"})
+            .AddNominalEntry("att3", {"0", "1"});
     t.close();
 
     InferenceEngine<Tuple::Instance> engine;

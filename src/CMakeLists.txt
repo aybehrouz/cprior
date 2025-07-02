@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
 project(cprior)
 
-add_compile_options(-O3)
+add_compile_options(-O3 -fopenmp)
 
 add_executable(cprior
         main.cpp
@@ -16,6 +16,10 @@ add_executable(cprior
         multinomial/Evaluator.h
         encoder/DataGenerator.cpp
         encoder/DataGenerator.h
+        ../test/tools/DecisionTreePredictor.cpp
+        ../test/tools/DecisionTreePredictor.h
 )
 
 target_compile_definitions(cprior PUBLIC NDEBUG)
+
+target_link_libraries(cprior mlpack)

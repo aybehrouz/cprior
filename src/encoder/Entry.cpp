@@ -15,10 +15,11 @@ void Entry::set_position(unsigned block_index, unsigned block_offset) {
     block_offset_ = block_offset;
 }
 
-NominalEntry::NominalEntry(std::vector<std::string> tokens): Entry(std::move(tokens.at(0)), tokens.size() - 1) {
-    for (int i = 1; i < tokens.size(); ++i) {
+NominalEntry::NominalEntry(std::string name, std::vector<std::string> categories)
+    : Entry(std::move(name), categories.size()) {
+    for (auto& category: categories) {
         auto [new_pair, inserted] =
-                value_map_.try_emplace(std::move(tokens[i]), value_map_.size() + 1);
+                value_map_.try_emplace(std::move(category), value_map_.size() + 1);
         if (!inserted) throw std::invalid_argument("category already exists");
         category_map_.emplace_back(new_pair->first);
     }

@@ -106,17 +106,20 @@ TEST(EvaluatorTest, EvaluatesRemovingAttributes) {
     dg.WriteInfoFile(info);
     dg.WriteDataFile(data, data_set_size);
 
-    auto acc = Evaluator::EvaluateIncremental(info, data, target_attributes, trial_count);
+    auto acc = Evaluator<>::EvaluateIncremental(info, data, target_attributes, trial_count);
     EXPECT_EQ(acc.size(), attr_count - target_attributes.size() + 1);
 }
 
 TEST(EvaluatorTest, AnswersQueries) {
-    const std::set target_attributes{1,5};
+    const std::set target_attributes{0,4,7};
     const std::string info = "data/data_q.info", train_file = "data/train_q.data", query_file = "data/query_q.data";
-    constexpr int attr_count = 10, train_size = 16, query_size = 7;
+    constexpr int attr_count = 14, train_size = 20, query_size = 7;
 
 
-    DataGenerator generator({{"00", "A"}, {"01", "B"}, {"10", "C"}, {"11", "D"}}
+    DataGenerator generator({
+                         {"000", "A"}, {"001", "B+"}, {"010", "C"}, {"011", "D"},
+                         {"100", "AA"}, {"101", "BB"}, {"110", "B+"}, {"111", "DD"}
+                     }
                      , attr_count, target_attributes);
 
     generator.WriteInfoFile(info);
@@ -124,11 +127,11 @@ TEST(EvaluatorTest, AnswersQueries) {
     generator.WriteDataFile(query_file, query_size);
 
     DataSet train;
-    auto tuple = train.ReadInfoFile(info);
-    train.ReadDataFile(tuple, train_file);
+    auto tuple_info = train.ReadInfoFile(info);
+    train.ReadDataFile(tuple_info, train_file);
 
     DataSet query;
-    query.ReadDataFile(tuple, query_file);
+    query.ReadDataFile(tuple_info, query_file);
 
     Evaluator eval(train);
     eval.Answer(query);

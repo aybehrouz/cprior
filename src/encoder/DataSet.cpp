@@ -30,11 +30,15 @@ Tuple DataSet::ReadInfoFile(const std::string& info_file_name) {
         if (ignored_entries_.contains(entry_index++)) continue;
 
         auto token_iter = sregex_token_iterator(attr_info.begin(), attr_info.end(), reg, -1);
-        vector<string> tokens(++token_iter, {});
+        ++token_iter;
+        auto name = token_iter++->str();
         if (type_specifier == "Nominal") {
-            result.AddNominalEntry(tokens);
+            result.AddNominalEntry(std::move(name), vector<string>(token_iter, {}));
         } else if (type_specifier == "Ordinal") {
-            result.AddOrdinalEntry(tokens);
+            auto cardinality = std::stoi(token_iter++->str());
+            auto min = std::stod(token_iter++->str());
+            auto max = std::stod(token_iter->str());
+            result.AddOrdinalEntry(std::move(name), cardinality, min, max);
         } else {
             throw runtime_error("Unrecognized attribute type specifier: " + type_specifier);
         }

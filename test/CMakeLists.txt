@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
 project(cprior)
 
-add_compile_options(-Wall -Wno-sign-compare -D_GLIBCXX_DEBUG)
+add_compile_options(-Wall -Wno-sign-compare -D_GLIBCXX_DEBUG -fopenmp)
 
 enable_testing()
 
@@ -20,6 +20,7 @@ add_executable(full_test
         dataset_test.cpp
         ../src/multinomial/Evaluator.cpp
         ../src/encoder/DataGenerator.cpp
+        tools/DecisionTreePredictor.cpp
         ../src/encoder/DataGenerator.h
 )
 
@@ -28,4 +29,5 @@ target_link_libraries(
         full_test
         GTest::gmock_main
         GTest::gtest_main
+        mlpack
 )

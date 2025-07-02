@@ -17,11 +17,10 @@ public:
         evidence_.Add(std::move(observation), count);
     }
 
-    InferenceEngine& ProcessEvidence() {
+    void ProcessEvidence() {
         if (root_ != nullptr) throw std::logic_error("Evidence already processed");
         root_ = std::make_unique<ModelNode<Outcome>>(std::move(evidence_));
         size_ = root_->CreateSubTree();
-        return *this;
     }
 
     const auto& MostProbableModel() const {

@@ -13,13 +13,13 @@ TEST(TupleTest, AddsEntries) {
     Tuple tuple(1);
 
     tuple
-            .AddNominalEntry({"Type", "a", "b", "c", "d"})
-            .AddNominalEntry({"Three", "1", "2", "3"})
-            .AddOrdinalEntry({"Age", "100", "1", "100"})
-            .AddOrdinalEntry({"Big", "10000000", "0", "1"})
-            .AddOrdinalEntry({"Float", "400000000", "-1", "1"})
-            .AddNominalEntry({"Answer", "yes", "no"})
-            .AddNominalEntry({"Small", "one"});
+            .AddNominalEntry("Type", {"a", "b", "c", "d"})
+            .AddNominalEntry("Three", {"1", "2", "3"})
+            .AddOrdinalEntry("Age", 100, 1, 100)
+            .AddOrdinalEntry("Big", 10000000, 0, 1)
+            .AddOrdinalEntry("Float", 400000000, -1, 1)
+            .AddNominalEntry("Answer", {"yes", "no"})
+            .AddNominalEntry("Small", {"one"});
 
     tuple.close();
     Tuple::Instance sample(tuple, {"c", "2", "3", "0.3687", "-0.512", "no", "one"});
@@ -37,10 +37,10 @@ TEST(TupleTest, AddsEntries) {
 TEST(TupleTest, ComputesPossibleTargetInstances) {
     Tuple tuple(2);
     tuple
-            .AddNominalEntry({"first", "1", "2"})
-            .AddNominalEntry({"second", "x", "y", "z"})
-            .AddNominalEntry({"target", "A", "B", "C", "D", "E"})
-            .AddNominalEntry({"third", "1", "2", "3", "4"});
+            .AddNominalEntry("first", {"1", "2"})
+            .AddNominalEntry("second", {"x", "y", "z"})
+            .AddNominalEntry("target", {"A", "B", "C", "D", "E"})
+            .AddNominalEntry("third", {"1", "2", "3", "4"});
 
     tuple.close();
     Tuple::Instance sample(tuple, {"1", "z", "C", "3"});
@@ -82,12 +82,12 @@ int CountReductions(const Tuple::Instance& instance) {
 TEST(TupleInstanceTest, ComputesReductions) {
     Tuple tuple(3);
     tuple
-            .AddNominalEntry({"first", "a", "b", "c"})
-            .AddNominalEntry({"second", "true", "false"})
-            .AddOrdinalEntry({"third", "6", "0", "1"})
-            .AddNominalEntry({"target", "win", "lose"})
-            .AddNominalEntry({"forth", "1", "2", "3", "4"})
-            .AddOrdinalEntry({"fifth", "3", "1", "4"});
+            .AddNominalEntry("first", {"a", "b", "c"})
+            .AddNominalEntry("second", {"true", "false"})
+            .AddOrdinalEntry("third", 6, 0, 1)
+            .AddNominalEntry("target", {"win", "lose"})
+            .AddNominalEntry("forth", {"1", "2", "3", "4"})
+            .AddOrdinalEntry("fifth", 3, 1, 4);
 
     tuple.close();
     Tuple::Instance sample(tuple, {"b", "true", "0.5", "win", "4", "2"});
@@ -116,30 +116,33 @@ TEST(TupleInstanceTest, ComputesReductions) {
 
 
     std::cout << "################## reductions (1, 5):" << std::endl;
-    Tuple::ChangeMaxMinAttributes(1, 5);
+    Tuple::ChangeMaxAttributes(5);
     EXPECT_EQ(CountReductions(sample), 31);
 
     std::cout << "################## reductions (1, 4):" << std::endl;
-    Tuple::ChangeMaxMinAttributes(1, 4);
+    Tuple::ChangeMaxAttributes(4);
     EXPECT_EQ(CountReductions(sample), 31);
 
     std::cout << "################## reductions (1, 3):" << std::endl;
-    Tuple::ChangeMaxMinAttributes(1, 3);
+    Tuple::ChangeMaxAttributes(3);
     EXPECT_EQ(CountReductions(sample), 26);
 
     std::cout << "################## reductions (2, 3):" << std::endl;
-    Tuple::ChangeMaxMinAttributes(2, 3);
+    Tuple::ChangeMinAttributes(2);
+    Tuple::ChangeMaxAttributes(3);
     EXPECT_EQ(CountReductions(sample), 21);
 
     std::cout << "################## reductions (1, 2):" << std::endl;
-    Tuple::ChangeMaxMinAttributes(1, 2);
+    Tuple::ChangeMinAttributes(1);
+    Tuple::ChangeMaxAttributes(2);
     EXPECT_EQ(CountReductions(sample), 16);
 
     std::cout << "################## reductions (2, 2):" << std::endl;
-    Tuple::ChangeMaxMinAttributes(2, 2);
+    Tuple::ChangeMinAttributes(2);
     EXPECT_EQ(CountReductions(sample), 11);
 
     std::cout << "################## reductions (1, 1):" << std::endl;
-    Tuple::ChangeMaxMinAttributes(1, 1);
+    Tuple::ChangeMinAttributes(1);
+    Tuple::ChangeMaxAttributes(1);
     EXPECT_EQ(CountReductions(sample), 6);
 }
