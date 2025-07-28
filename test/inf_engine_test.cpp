@@ -42,12 +42,14 @@ TEST(InfEngineTest, CalculatesBestOutcome) {
     t.close();
 
     InferenceEngine<Tuple::Instance> engine;
-    engine.AddEvidence({t, {"lose", "0", "0", "0"}});
-    engine.AddEvidence({t, {"win", "0", "0", "1"}});
-    engine.AddEvidence({t, {"win", "1", "0", "0"}});
+    engine.AddEvidence({t, {"lose", "0", "0", "1"}});
+    engine.AddEvidence({t, {"win", "0", "1", "0"}});
     engine.AddEvidence({t, {"win", "1", "0", "1"}});
+    engine.AddEvidence({t, {"win", "1", "1", "0"}});
+    engine.AddEvidence({t, {"lose", "0", "0", "0"}});
 
-    Tuple::Instance q(t, {"win", "0", "1", "0"});
+
+    Tuple::Instance q(t, {"lose", "0", "0", "0"});
     auto [query, _] = q.ComputeTargetInstances();
 
     engine.ProcessEvidence();
@@ -58,7 +60,4 @@ TEST(InfEngineTest, CalculatesBestOutcome) {
     std::cout << engine.MostProbableModel() << std::endl;
 
     //EXPECT_EQ(query.at(answer), Tuple::Instance(t, {"win", "1", "1", "1"}));
-
-
-
-                                      }
+}

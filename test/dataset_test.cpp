@@ -96,11 +96,11 @@ TEST(DataSetTest, DataGen) {
 TEST(EvaluatorTest, EvaluatesRemovingAttributes) {
     const std::set target_attributes{0,6};
     const std::string info = "data/gen.info", data = "data/gen.data";
-    constexpr int attr_count = 7, data_set_size = 10;
-    constexpr int trial_count = 1;
+    constexpr int attr_count = 9, data_set_size = 9;
+    constexpr int trial_count = 150;
 
 
-    DataGenerator dg({{"00", "one"}, {"01", "zero"}, {"10", "zero"}, {"11", "one"}}
+    DataGenerator dg({{"00", "zero"}, {"01", "zero"}, {"10", "zero"}, {"11", "one"}}
                      , attr_count, target_attributes);
 
     dg.WriteInfoFile(info);
@@ -108,17 +108,18 @@ TEST(EvaluatorTest, EvaluatesRemovingAttributes) {
 
     auto acc = Evaluator<>::EvaluateIncremental(info, data, target_attributes, trial_count);
     EXPECT_EQ(acc.size(), attr_count - target_attributes.size() + 1);
+    EXPECT_EQ(acc, std::vector({1.0,2.0}));
 }
 
 TEST(EvaluatorTest, AnswersQueries) {
-    const std::set target_attributes{0,4,7};
+    const std::set target_attributes{3, 4, 5};
     const std::string info = "data/data_q.info", train_file = "data/train_q.data", query_file = "data/query_q.data";
-    constexpr int attr_count = 14, train_size = 20, query_size = 7;
+    constexpr int attr_count = 10, train_size = 20, query_size = 6;
 
 
     DataGenerator generator({
-                         {"000", "A"}, {"001", "B+"}, {"010", "C"}, {"011", "D"},
-                         {"100", "AA"}, {"101", "BB"}, {"110", "B+"}, {"111", "DD"}
+                         {"000", "A+"}, {"001", "D+"}, {"010", "A+"}, {"011", "D"},
+                         {"100", "B+"}, {"101", "B+"}, {"110", "B+"}, {"111", "DD"}
                      }
                      , attr_count, target_attributes);
 
@@ -133,6 +134,15 @@ TEST(EvaluatorTest, AnswersQueries) {
     DataSet query;
     query.ReadDataFile(tuple_info, query_file);
 
-    Evaluator eval(train);
-    eval.Answer(query);
+
+    std::cout << "*** Probabilistic Function: ***\n";
+    Tuple::kHasDeterministicTarget = false;
+    Evaluator probabilistic(train);
+    probabilistic.Answer(query);
+
+
+    std::cout << "*** Deterministic Function: ***\n";
+    Tuple::kHasDeterministicTarget = true;
+    Evaluator deterministic(train);
+    deterministic.Answer(query);
 }

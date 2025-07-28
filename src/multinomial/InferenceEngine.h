@@ -8,12 +8,16 @@
 
 #include "ModelNode.h"
 #include "Variable.h"
+#include "encoder/Tuple.h"
 
 namespace cprior::multinomial {
 template<Reducable Outcome>
 class InferenceEngine {
 public:
     void AddEvidence(Outcome&& observation, int count = 1) {
+        if constexpr (std::is_same_v<Outcome, encoder::Tuple::Instance>) {
+            if (target_cardinality_ == 0) target_cardinality_ = observation.target_cardinality();
+        }
         evidence_.Add(std::move(observation), count);
     }
 
@@ -21,6 +25,9 @@ public:
         if (root_ != nullptr) throw std::logic_error("Evidence already processed");
         root_ = std::make_unique<ModelNode<Outcome>>(std::move(evidence_));
         size_ = root_->CreateSubTree();
+        if constexpr (std::is_same_v<Outcome, encoder::Tuple::Instance>) {
+           root_->MakeDeterministic(target_cardinality_);
+        }
     }
 
     const auto& MostProbableModel() const {
@@ -61,6 +68,7 @@ private:
     Variable<Outcome> evidence_{};
     std::unique_ptr<ModelNode<Outcome>> root_{};
     std::size_t size_ = 0;
+    int target_cardinality_ = 0;
 };
 } // cprior::multinomial
 

@@ -57,7 +57,7 @@ std::string Tuple::Instance::attribute_str() const {
     if (attribute_count() == 0) return {};
     stringstream ss;
     ss << attribute_str(0);
-    for (int i = 1; i < this->attribute_count(); ++i) ss << "," << attribute_str(i);
+    for (int i = 1; i < tuple_.attribute_count(); ++i) ss << "," << attribute_str(i);
     return ss.str();
 }
 

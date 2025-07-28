@@ -7,6 +7,7 @@
 
 #include <utility>
 #include <limits>
+#include <iostream>
 
 #include "Entry.h"
 #include "util/Gamma.h"
@@ -14,6 +15,7 @@
 namespace cprior::encoder {
 class Tuple {
 public:
+    static inline bool kHasDeterministicTarget = false;
     using BlockType = Entry::IntType;
     static constexpr unsigned kBlockSize = 8 * sizeof(BlockType);
 
@@ -37,6 +39,7 @@ public:
     }
 
     void close() {
+        if (kHasDeterministicTarget) dim_ /= target().cardinality();
         closed_ = true;
     }
 
@@ -105,7 +108,7 @@ public:
         }
 
         [[nodiscard]]
-        auto target_int() const {
+        auto target_int_value() const {
             return IntValueOf_(tuple_.target());
         }
 
@@ -146,6 +149,7 @@ public:
 
         [[nodiscard]]
         std::size_t hash() const {
+            if (kHasDeterministicTarget) return 1;
             if (content_bit_blocks_.size() == 1) return content_bit_blocks_.back();
             std::size_t hash = 0x651A07A9;
             for (const auto bit_block: content_bit_blocks_) {
@@ -155,7 +159,15 @@ public:
         }
 
         friend bool operator==(const Instance& lhs, const Instance& rhs) {
-            return lhs.content_bit_blocks_ == rhs.content_bit_blocks_;
+            if (lhs.content_bit_blocks_ == rhs.content_bit_blocks_) return true;
+            if (kHasDeterministicTarget) {
+                auto lhs_copy = lhs;
+                lhs_copy.set_target(rhs.target_int_value());
+                if (lhs_copy.content_bit_blocks_ == rhs.content_bit_blocks_) {
+                    throw std::invalid_argument("non-deterministic target");
+                }
+            }
+            return false;
         }
 
         friend std::ostream& operator<<(std::ostream& os, const Instance& obj);

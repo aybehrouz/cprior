@@ -4,6 +4,8 @@
 
 #ifndef VARIABLE_H
 #define VARIABLE_H
+#include <algorithm>
+#include <ranges>
 #include <unordered_map>
 #include "util/HpFloat.h"
 
@@ -34,16 +36,25 @@ public:
     }
 
     std::vector<Variable> ComputeReducedVariables() const {
-        if (counts_.empty()) return {};
+        if (counts_.empty() || pruned_) return {};
         std::vector<Variable> reduced_vars(counts_.begin()->first.num_of_reductions());
         for (const auto& [outcome, count]: counts_) {
             auto reductions = outcome.ComputeReductions();
             assert(reductions.size() == reduced_vars.size());
             for (int i = 0; i < reduced_vars.size(); ++i) {
-                reduced_vars[i].Add(std::move(reductions[i]), count);
+                try {
+                    reduced_vars[i].Add(std::move(reductions[i]), count);
+                } catch (const std::invalid_argument &) {
+                    reduced_vars[i].pruned_ = true;
+                }
             }
         }
         return reduced_vars;
+    }
+
+    [[nodiscard]]
+    int outcome_count() const {
+        return static_cast<int>(counts_.size());
     }
 
     [[nodiscard]]
@@ -82,9 +93,15 @@ public:
         return it == counts_.end() ? 0 : it->second;
     }
 
+    [[nodiscard]]
+    bool pruned() const {
+        return pruned_;
+    }
+
 private:
     std::unordered_map<Outcome, int> counts_;
     int total_count_ = 0;
+    bool pruned_ = false;
 };
 } // cprior::multinomial
 

@@ -14,16 +14,23 @@ using namespace cprior::test;
 
 
 int main() {
-    const std::set target_attributes{0, 2, 5};
+    const std::set target_attributes{2, 3, 7};
     const std::string info = "gen.info", data = "gen.data";
-    constexpr int attr_count = 10, data_set_size = 20;
-    constexpr int trial_count = 200;
+    constexpr int attr_count = 12, data_set_size = 1000;
+    constexpr int trial_count = 75;
+    constexpr int test_size = 70, train_size = 20;
 
     DataGenerator dg({
-                         {"000", "A+"}, {"001", "B"}, {"010", "C"}, {"011", "D"},
-                         {"100", "AA"}, {"101", "BB"}, {"110", "A+"}, {"111", "DD"}
+                         {"000", "A"}, {"001", "B"}, {"010", "A"}, {"011", "C"},
+                         {"100", "D"}, {"101", "D"}, {"110", "D"}, {"111", "E"},
                      }
                      , attr_count, target_attributes);
+/*
+    DataGenerator dg({
+                         {"000", "a"}, {"001", "b"}, {"010", "c"}, {"011", "d"},
+                         {"100", "e"}, {"101", "f"}, {"110", "g"}, {"111", "h"},
+                     }
+                     , attr_count, target_attributes);*/
 
     dg.WriteInfoFile(info);
     dg.WriteDataFile(data, data_set_size);
@@ -32,23 +39,38 @@ int main() {
     auto seed = seeder();
 
     auto accuracy = Evaluator<DecisionTreePredictor>
-            ::EvaluateIncremental(info, data, target_attributes, trial_count, seed);
-    std::cout << "c(" << accuracy[0];
+            ::EvaluateIncremental(info, data, train_size, test_size, target_attributes, trial_count, seed);
 
-    for (int i = 1; i < accuracy.size(); ++i) {
-        std::cout << "," << accuracy[i];
+    for (int i = accuracy.size() - 1; i >= 0; --i) {
+        std::cout << "(" << accuracy.size() - 1 - i + target_attributes.size() << ", "<< accuracy[i] << ") ";
     }
-    std::cout << ")" << std::endl;
+    std::cout << std::endl;
 
 
+
+
+    //Tuple::ChangeMaxAttributes(5);
+
+    Tuple::kHasDeterministicTarget = false;
     accuracy = Evaluator<>
-            ::EvaluateIncremental(info, data, target_attributes, trial_count, seed);
-    std::cout << "c(" << accuracy[0];
+            ::EvaluateIncremental(info, data, train_size, test_size, target_attributes, trial_count, seed);
 
-    for (int i = 1; i < accuracy.size(); ++i) {
-        std::cout << "," << accuracy[i];
+
+    for (int i = accuracy.size() - 1; i >= 0; --i) {
+        std::cout << "(" << accuracy.size() - 1 - i + target_attributes.size() << ", "<< accuracy[i] << ") ";
     }
-    std::cout << ")" << std::endl;
+    std::cout << std::endl;
+
+
+    Tuple::kHasDeterministicTarget = true;
+    accuracy = Evaluator<>
+           ::EvaluateIncremental(info, data, train_size, test_size, target_attributes, trial_count, seed);
+
+
+    for (int i = accuracy.size() - 1; i >= 0; --i) {
+        std::cout << "(" << accuracy.size() - 1 - i + target_attributes.size() << ", "<< accuracy[i] << ") ";
+    }
+    std::cout << std::endl;
 
     return 0;
 }

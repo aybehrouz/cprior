@@ -23,7 +23,7 @@ void DecisionTreePredictor::AddEvidence(Datum&& observation, int count) {
     }
     for (int i = 0; i < count; ++i) {
         train_file_ << observation.attribute_str() << std::endl;
-        label_file_ << observation.target_int() - 1 << std::endl;
+        label_file_ << observation.target_int_value() - 1 << std::endl;
     }
 }
 

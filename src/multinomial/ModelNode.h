@@ -22,6 +22,12 @@ public:
     explicit ModelNode(Variable<Outcome> observations)
         : current_observations_(std::move(observations)) {
         using namespace util;
+
+        if (current_observations_.pruned()) {
+            base_measure_ = 0.0;
+            return;
+        }
+
         auto n = current_observations_.total_count() + 1;
         HpFloat log_probability;
         if (current_observations_.dim() / n > 1e5) {
@@ -79,8 +85,15 @@ public:
     }
 
     util::HpFloat TreeWeightedSumAfter(const Outcome& observation) const {
-        util::HpFloat measure = base_measure_ *
-                                (current_observations_.count(observation) + 0.5) / observation.group_size();;
+        if (current_observations_.pruned()) return 0.0;
+
+        int count = 0;
+        try {
+            count = current_observations_.count(observation);
+        } catch (const std::invalid_argument&) {
+            return 0.0;
+        }
+        util::HpFloat measure = base_measure_ * (count + 0.5) / observation.group_size();;
         const std::vector<Outcome> reduced_observation = observation.ComputeReductions();
         assert(children_.size() == reduced_observation.size());
         for (int i = 0; i < children_.size(); ++i) {
@@ -100,6 +113,13 @@ public:
     void set_weight(const util::HpFloat& weight) {
         base_measure_ = base_measure_ * weight / weight_;
         weight_ = weight;
+    }
+
+    void MakeDeterministic(int c) {
+        set_weight(1.0 / std::pow(c, current_observations_.outcome_count()));
+        for (auto && child: children_) {
+            child.MakeDeterministic(c);
+        }
     }
 
     void UpdateObservations(const Variable<Outcome>& delta) {

@@ -22,6 +22,11 @@ public:
 
     void ReadDataFile(const Tuple& tuple, const std::string& data_file_name);
 
+    [[nodiscard]]
+    std::size_t size() const {
+        return data_.size();
+    }
+
     auto begin() {
         return data_.begin();
     }

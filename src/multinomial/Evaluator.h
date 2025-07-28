@@ -15,8 +15,14 @@ namespace cprior::multinomial {
 template <typename Predictor = InferenceEngine<encoder::Tuple::Instance>>
 class Evaluator {
 public:
-    explicit Evaluator(const encoder::DataSet& data, unsigned int seed = rd_()) : rnd_(seed), data_(data) {
+    explicit Evaluator(const encoder::DataSet& data,
+                       size_t train_size,
+                       size_t test_size,
+                       unsigned int seed = rd_())
+        : data_(data), train_size_(train_size), test_size_(test_size), rnd_(seed) {
     }
+
+
 
     std::pair<size_t, size_t> Evaluate();
 
@@ -27,17 +33,18 @@ public:
     static
     std::vector<double> EvaluateIncremental(const std::string& info_file_name,
                                             const std::string& data_file_name,
+                                            size_t train_size, size_t test_size,
                                             const std::set<int>& target_attributes,
                                             int trials_count,
                                             unsigned int seed = rd_());
 
-
 private:
-    static inline std::random_device rd_;
-
-    std::default_random_engine rnd_;
-    std::discrete_distribution<> select_train_{{30, 70}};
     const encoder::DataSet& data_;
+    size_t train_size_;
+    size_t test_size_;
+    std::default_random_engine rnd_;
+
+    static inline std::random_device rd_;
 };
 } // cprior::multinomial
 

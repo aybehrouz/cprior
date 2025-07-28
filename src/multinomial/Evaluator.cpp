@@ -21,32 +21,44 @@ pair<size_t, size_t> Evaluator<Predictor>::Evaluate() {
     Predictor engine;
     vector<Tuple::Instance> test_set;
 
+    std::discrete_distribution select{
+            {
+                static_cast<double>(test_size_),
+                static_cast<double>(train_size_) * 1.2,
+                static_cast<double>(data_.size() - train_size_ * 1.2 - test_size_)
+            }
+    };
 
-    size_t correct_count = 0;
-    size_t train_size = 0;
-    for (auto sample: data_) {
-        if (select_train_(rnd_)) {
-            ++train_size;
-            //std::cout << "train:" << sample << std::endl;
-            engine.AddEvidence(std::move(sample));
-        } else {
-            //std::cout << "test:" << sample << std::endl;
-            test_set.emplace_back(std::move(sample));
+    size_t selected = 0;
+    while (selected != train_size_) {
+        engine = Predictor();
+        test_set = vector<Tuple::Instance>();
+        selected = 0;
+        for (auto sample: data_) {
+            if (select(rnd_) == 1 && selected < train_size_) {
+                ++selected;
+                //std::cout << "train:" << sample << std::endl;
+                engine.AddEvidence(std::move(sample));
+            } else if (select(rnd_) == 0) {
+                //std::cout << "test:" << sample << std::endl;
+                test_set.emplace_back(std::move(sample));
+            }
         }
     }
 
-    if (train_size == 0) return {0, 0};
+    std::cout << "train:" << selected << " test:" << test_set.size() << std::endl;
 
     engine.ProcessEvidence();
 
+    size_t correct_count = 0;
     for (const auto& test_sample: test_set) {
         auto [possible_predictions, answer] = test_sample.ComputeTargetInstances();
         auto prediction = engine.MostProbableOutcome(possible_predictions);
         if (prediction == answer) {
             ++correct_count;
         } else {
-            std::cout << "Wrong prediction:" << possible_predictions[prediction] <<
-                    "instead of " << test_sample << std::endl;
+            //std::cout << "Wrong prediction:" << possible_predictions[prediction] <<
+            //        "instead of " << test_sample << std::endl;
         }
     }
 
@@ -82,6 +94,7 @@ double Evaluator<Predictor>::Evaluate(int trial_count) {
 template<typename Predictor>
 vector<double> Evaluator<Predictor>::EvaluateIncremental(const string& info_file_name,
                                                          const string& data_file_name,
+                                                         size_t train_size, size_t test_size,
                                                          const set<int>& target_attributes,
                                                          int trials_count,
                                                          unsigned int seed) {
@@ -97,7 +110,7 @@ vector<double> Evaluator<Predictor>::EvaluateIncremental(const string& info_file
     // Tuple::ChangeMinAttributes(static_cast<int>(target_attributes.size()));
 
     full_data.ReadDataFile(header_tuple, data_file_name);
-    result.push_back(Evaluator(full_data, seed).Evaluate(trials_count));
+    result.push_back(Evaluator(full_data, train_size, test_size, seed).Evaluate(trials_count));
 
     for (int i = 0; i < entry_count; ++i) {
         if (target_attributes.contains(i) || target == i) continue;
@@ -107,7 +120,7 @@ vector<double> Evaluator<Predictor>::EvaluateIncremental(const string& info_file
         auto tuple = partial_data.ReadInfoFile(info_file_name);
         partial_data.ReadDataFile(tuple, data_file_name);
 
-        result.push_back(Evaluator(partial_data, seed).Evaluate(trials_count));
+        result.push_back(Evaluator(partial_data, train_size, test_size, seed).Evaluate(trials_count));
     }
 
     // Tuple::ChangeMinAttributes();
