@@ -33,6 +33,10 @@ TEST(InferenceEngineTest, CalculatesCentralProbabilities) {
 }
 
 TEST(InfEngineTest, CalculatesBestOutcome) {
+
+    // Tuple::kHasDeterministicTarget = true;
+    Tuple::ChangeMinAttributes(2);
+
     Tuple t(0);
     t
             .AddNominalEntry("target", {"win", "lose"})
@@ -43,10 +47,10 @@ TEST(InfEngineTest, CalculatesBestOutcome) {
 
     InferenceEngine<Tuple::Instance> engine;
     engine.AddEvidence({t, {"lose", "0", "0", "1"}});
-    engine.AddEvidence({t, {"win", "0", "1", "0"}});
+    engine.AddEvidence({t, {"win", "0", "1", "1"}});
     engine.AddEvidence({t, {"win", "1", "0", "1"}});
-    engine.AddEvidence({t, {"win", "1", "1", "0"}});
-    engine.AddEvidence({t, {"lose", "0", "0", "0"}});
+    engine.AddEvidence({t, {"win", "1", "1", "1"}});
+
 
 
     Tuple::Instance q(t, {"lose", "0", "0", "0"});

@@ -21,32 +21,24 @@ pair<size_t, size_t> Evaluator<Predictor>::Evaluate() {
     Predictor engine;
     vector<Tuple::Instance> test_set;
 
-    std::discrete_distribution select{
-            {
-                static_cast<double>(test_size_),
-                static_cast<double>(train_size_) * 1.2,
-                static_cast<double>(data_.size() - train_size_ * 1.2 - test_size_)
-            }
-    };
 
-    size_t selected = 0;
-    while (selected != train_size_) {
+
+    size_t selected_train = 0;
+    while (selected_train != train_size_ || test_set.size() != test_size_) {
         engine = Predictor();
         test_set = vector<Tuple::Instance>();
-        selected = 0;
+        selected_train = 0;
         for (auto sample: data_) {
-            if (select(rnd_) == 1 && selected < train_size_) {
-                ++selected;
-                //std::cout << "train:" << sample << std::endl;
+            if (select_(rnd_) == 1 && selected_train < train_size_) {
+                ++selected_train;
+                // std::cout << "train:" << sample << std::endl;
                 engine.AddEvidence(std::move(sample));
-            } else if (select(rnd_) == 0) {
-                //std::cout << "test:" << sample << std::endl;
+            } else if (select_(rnd_) == 0 && test_set.size() < test_size_) {
+                // std::cout << "test:" << sample << std::endl;
                 test_set.emplace_back(std::move(sample));
             }
         }
     }
-
-    std::cout << "train:" << selected << " test:" << test_set.size() << std::endl;
 
     engine.ProcessEvidence();
 

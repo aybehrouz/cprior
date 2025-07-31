@@ -16,21 +16,21 @@ using namespace cprior::test;
 int main() {
     const std::set target_attributes{2, 3, 7};
     const std::string info = "gen.info", data = "gen.data";
-    constexpr int attr_count = 12, data_set_size = 1000;
-    constexpr int trial_count = 75;
-    constexpr int test_size = 70, train_size = 20;
-
+    constexpr int attr_count = 12, data_set_size = 2000;
+    constexpr int trial_count = 100;
+    constexpr int test_size = 60, train_size = 20;
+/*
     DataGenerator dg({
                          {"000", "A"}, {"001", "B"}, {"010", "A"}, {"011", "C"},
                          {"100", "D"}, {"101", "D"}, {"110", "D"}, {"111", "E"},
                      }
                      , attr_count, target_attributes);
-/*
+*/
     DataGenerator dg({
                          {"000", "a"}, {"001", "b"}, {"010", "c"}, {"011", "d"},
                          {"100", "e"}, {"101", "f"}, {"110", "g"}, {"111", "h"},
                      }
-                     , attr_count, target_attributes);*/
+                     , attr_count, target_attributes);
 
     dg.WriteInfoFile(info);
     dg.WriteDataFile(data, data_set_size);

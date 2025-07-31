@@ -96,7 +96,8 @@ TEST(DataSetTest, DataGen) {
 TEST(EvaluatorTest, EvaluatesRemovingAttributes) {
     const std::set target_attributes{0,6};
     const std::string info = "data/gen.info", data = "data/gen.data";
-    constexpr int attr_count = 9, data_set_size = 9;
+    constexpr int attr_count = 9, data_set_size = 1000;
+    std::size_t train = 15, test = 60;
     constexpr int trial_count = 150;
 
 
@@ -106,7 +107,7 @@ TEST(EvaluatorTest, EvaluatesRemovingAttributes) {
     dg.WriteInfoFile(info);
     dg.WriteDataFile(data, data_set_size);
 
-    auto acc = Evaluator<>::EvaluateIncremental(info, data, target_attributes, trial_count);
+    auto acc = Evaluator<>::EvaluateIncremental(info, data, train, test, target_attributes, trial_count);
     EXPECT_EQ(acc.size(), attr_count - target_attributes.size() + 1);
     EXPECT_EQ(acc, std::vector({1.0,2.0}));
 }
