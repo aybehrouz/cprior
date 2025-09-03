@@ -26,7 +26,7 @@ public:
         root_ = std::make_unique<ModelNode<Outcome>>(std::move(evidence_));
         size_ = root_->CreateSubTree();
         if constexpr (std::is_same_v<Outcome, encoder::Tuple::Instance>) {
-           root_->MakeDeterministic(target_cardinality_);
+            if (encoder::Tuple::kHasDeterministicTarget) root_->MakeDeterministic(target_cardinality_);
         }
     }
 
