@@ -7,7 +7,6 @@
 
 #include <utility>
 #include <limits>
-#include <iostream>
 
 #include "Entry.h"
 #include "util/Gamma.h"
@@ -15,7 +14,6 @@
 namespace cprior::encoder {
 class Tuple {
 public:
-    static inline bool kHasDeterministicTarget = false;
     using BlockType = Entry::IntType;
     static constexpr unsigned kBlockSize = 8 * sizeof(BlockType);
 
@@ -39,7 +37,6 @@ public:
     }
 
     void close() {
-        if (kHasDeterministicTarget) dim_ /= target().cardinality();
         closed_ = true;
     }
 
@@ -68,6 +65,7 @@ public:
         return index_of_target_;
     }
 
+    [[nodiscard]]
     std::string to_string() const;
 
     [[nodiscard]]
@@ -93,16 +91,21 @@ public:
     public:
         Instance(const Tuple& tuple, const std::vector<std::string>& tokens);
 
+        [[nodiscard]]
         std::vector<Instance> ComputeReductions() const;
 
+        [[nodiscard]]
         std::pair<std::vector<Instance>, Entry::IntType> ComputeTargetInstances() const;
 
+        [[nodiscard]]
         std::string attribute_str(int index) const {
             return StringValueOf_(tuple_.attribute(index));
         }
 
+        [[nodiscard]]
         std::string attribute_str() const;
 
+        [[nodiscard]]
         std::string target_str() const {
             return StringValueOf_(tuple_.target());
         }
@@ -121,6 +124,8 @@ public:
             SetValueOf_(tuple_.target(), value);
         }
 
+        void RemoveTarget();
+
         [[nodiscard]]
         int num_of_reductions() const {
             if (attr_count_ <= min_attributes_) return 0;
@@ -138,6 +143,11 @@ public:
         }
 
         [[nodiscard]]
+       double preimage_size() const {
+            return group_size_;
+        }
+
+        [[nodiscard]]
        int attribute_count() const {
             return attr_count_;
         }
@@ -149,7 +159,6 @@ public:
 
         [[nodiscard]]
         std::size_t hash() const {
-            if (kHasDeterministicTarget) return 1;
             if (content_bit_blocks_.size() == 1) return content_bit_blocks_.back();
             std::size_t hash = 0x651A07A9;
             for (const auto bit_block: content_bit_blocks_) {
@@ -160,13 +169,6 @@ public:
 
         friend bool operator==(const Instance& lhs, const Instance& rhs) {
             if (lhs.content_bit_blocks_ == rhs.content_bit_blocks_) return true;
-            if (kHasDeterministicTarget) {
-                auto lhs_copy = lhs;
-                lhs_copy.set_target(rhs.target_int_value());
-                if (lhs_copy.content_bit_blocks_ == rhs.content_bit_blocks_) {
-                    throw std::invalid_argument("non-deterministic target");
-                }
-            }
             return false;
         }
 
@@ -182,10 +184,12 @@ public:
 
         void RemoveAttribute_(int index);
 
+        [[nodiscard]]
         std::string StringValueOf_(const Entry& e) const {
             return e.StringFromIntValue(IntValueOf_(e));
         }
 
+        [[nodiscard]]
         Entry::IntType IntValueOf_(const Entry& e) const {
             return (content_bit_blocks_[e.block_index()] & ~e.negative_mask()) >> e.block_offset();
         }

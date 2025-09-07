@@ -18,6 +18,11 @@ add_executable(cprior
         encoder/DataGenerator.h
         ../test/tools/DecisionTreePredictor.cpp
         ../test/tools/DecisionTreePredictor.h
+        multinomial/CentralPredictive.cpp
+        multinomial/CentralPredictive.h
+        multinomial/Deterministic.h
+        multinomial/Conditional.cpp
+        multinomial/Conditional.h
 )
 
 target_compile_definitions(cprior PUBLIC NDEBUG)

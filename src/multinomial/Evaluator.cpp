@@ -6,6 +6,7 @@
 
 #include <random>
 
+#include "Conditional.h"
 #include "InferenceEngine.h"
 #include "../../test/tools/DecisionTreePredictor.h"
 #include "encoder/DataSet.h"
@@ -121,5 +122,8 @@ vector<double> Evaluator<Predictor>::EvaluateIncremental(const string& info_file
 }
 
 template class Evaluator<InferenceEngine<Tuple::Instance>>;
+template class Evaluator<InferenceEngine<Tuple::Instance, model::Deterministic<true>>>;
+template class Evaluator<InferenceEngine<Tuple::Instance, model::Conditional>>;
+template class Evaluator<InferenceEngine<Tuple::Instance, model::Deterministic<false>>>;
 template class Evaluator<test::DecisionTreePredictor>;
 }

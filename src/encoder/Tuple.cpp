@@ -61,6 +61,12 @@ std::string Tuple::Instance::attribute_str() const {
     return ss.str();
 }
 
+void Tuple::Instance::RemoveTarget() {
+    const auto& target = tuple_.target();
+    content_bit_blocks_[target.block_index()] &= target.negative_mask();
+    dim_ /= target.cardinality();
+}
+
 void Tuple::Instance::RemoveAttribute_(int index) {
     const auto& attr = tuple_.attribute(index);
     content_bit_blocks_[attr.block_index()] &= attr.negative_mask();

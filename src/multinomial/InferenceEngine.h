@@ -6,12 +6,13 @@
 #define CPRIOR_INFERENCE_ENGINE_H
 #include <ostream>
 
+#include "Deterministic.h"
 #include "ModelNode.h"
 #include "Variable.h"
 #include "encoder/Tuple.h"
 
 namespace cprior::multinomial {
-template<Reducable Outcome>
+template<Reducable Outcome, class Model = ModelNode<Outcome>>
 class InferenceEngine {
 public:
     void AddEvidence(Outcome&& observation, int count = 1) {
@@ -23,10 +24,16 @@ public:
 
     void ProcessEvidence() {
         if (root_ != nullptr) throw std::logic_error("Evidence already processed");
-        root_ = std::make_unique<ModelNode<Outcome>>(std::move(evidence_));
-        size_ = root_->CreateSubTree();
-        if constexpr (std::is_same_v<Outcome, encoder::Tuple::Instance>) {
-            if (encoder::Tuple::kHasDeterministicTarget) root_->MakeDeterministic(target_cardinality_);
+
+        if constexpr (std::is_same_v<Model, ModelNode<Outcome>>) {
+            root_ = std::make_unique<Model>(std::move(evidence_));
+            size_ = root_->CreateSubTree();
+        } else {
+            root_ = std::make_unique<Model>();
+            for (const auto& [outcome, count]: evidence_.counts()) {
+                root_->Add(outcome, count);
+            }
+            size_ = root_->CreateSubTree();
         }
     }
 
@@ -66,7 +73,7 @@ public:
 
 private:
     Variable<Outcome> evidence_{};
-    std::unique_ptr<ModelNode<Outcome>> root_{};
+    std::unique_ptr<Model> root_{};
     std::size_t size_ = 0;
     int target_cardinality_ = 0;
 };

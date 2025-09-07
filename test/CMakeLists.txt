@@ -22,6 +22,8 @@ add_executable(full_test
         ../src/encoder/DataGenerator.cpp
         tools/DecisionTreePredictor.cpp
         ../src/encoder/DataGenerator.h
+        ../src/multinomial/CentralPredictive.cpp
+        ../src/multinomial/CentralPredictive.h
 )
 
 # linking Google_Tests_run with libraries

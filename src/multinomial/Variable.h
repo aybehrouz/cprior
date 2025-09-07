@@ -36,17 +36,13 @@ public:
     }
 
     std::vector<Variable> ComputeReducedVariables() const {
-        if (counts_.empty() || pruned_) return {};
+        if (counts_.empty()) return {};
         std::vector<Variable> reduced_vars(counts_.begin()->first.num_of_reductions());
         for (const auto& [outcome, count]: counts_) {
             auto reductions = outcome.ComputeReductions();
             assert(reductions.size() == reduced_vars.size());
             for (int i = 0; i < reduced_vars.size(); ++i) {
-                try {
-                    reduced_vars[i].Add(std::move(reductions[i]), count);
-                } catch (const std::invalid_argument &) {
-                    reduced_vars[i].pruned_ = true;
-                }
+                reduced_vars[i].Add(std::move(reductions[i]), count);
             }
         }
         return reduced_vars;
@@ -68,11 +64,17 @@ public:
     }
 
     [[nodiscard]]
+    std::unordered_map<Outcome, int>& counts() {
+        return counts_;
+    }
+
+    [[nodiscard]]
     bool empty() const {
         return counts_.empty();
     }
 
-    double dim() const {
+    [[nodiscard]]
+    auto dim() const {
         return counts_.begin()->first.dim();
     }
 
@@ -93,15 +95,9 @@ public:
         return it == counts_.end() ? 0 : it->second;
     }
 
-    [[nodiscard]]
-    bool pruned() const {
-        return pruned_;
-    }
-
 private:
     std::unordered_map<Outcome, int> counts_;
     int total_count_ = 0;
-    bool pruned_ = false;
 };
 } // cprior::multinomial
 

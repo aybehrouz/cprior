@@ -1,6 +1,7 @@
 #include "../test/tools/DecisionTreePredictor.h"
 #include "encoder/DataGenerator.h"
 #include "encoder/DataSet.h"
+#include "multinomial/Conditional.h"
 #include "multinomial/Evaluator.h"
 
 
@@ -51,7 +52,6 @@ int main() {
 
     //Tuple::ChangeMaxAttributes(5);
 
-    Tuple::kHasDeterministicTarget = false;
     accuracy = Evaluator<>
             ::EvaluateIncremental(info, data, train_size, test_size, target_attributes, trial_count, seed);
 
@@ -62,9 +62,29 @@ int main() {
     std::cout << std::endl;
 
 
-    Tuple::kHasDeterministicTarget = true;
-    accuracy = Evaluator<>
-           ::EvaluateIncremental(info, data, train_size, test_size, target_attributes, trial_count, seed);
+    accuracy = Evaluator<InferenceEngine<Tuple::Instance, model::Conditional>>
+            ::EvaluateIncremental(info, data, train_size, test_size, target_attributes, trial_count, seed);
+
+
+    for (int i = accuracy.size() - 1; i >= 0; --i) {
+        std::cout << "(" << accuracy.size() - 1 - i + target_attributes.size() << ", "<< accuracy[i] << ") ";
+    }
+    std::cout << std::endl;
+
+
+
+    accuracy = Evaluator<InferenceEngine<Tuple::Instance, model::Deterministic<true>>>
+            ::EvaluateIncremental(info, data, train_size, test_size, target_attributes, trial_count, seed);
+
+
+    for (int i = accuracy.size() - 1; i >= 0; --i) {
+        std::cout << "(" << accuracy.size() - 1 - i + target_attributes.size() << ", "<< accuracy[i] << ") ";
+    }
+    std::cout << std::endl;
+
+
+    accuracy = Evaluator<InferenceEngine<Tuple::Instance, model::Deterministic<false>>>
+            ::EvaluateIncremental(info, data, train_size, test_size, target_attributes, trial_count, seed);
 
 
     for (int i = accuracy.size() - 1; i >= 0; --i) {
