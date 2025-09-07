@@ -28,29 +28,23 @@ public:
 
         using namespace util;
 
-        auto& info = counts_[std::move(observation)];
-        if (info.count == 0) {
-            info = {target, count};
-            if constexpr (!conditional) {
-                log_prob_ += Gamma::lgammaIntPlusHalf(count) - Gamma::lgammaIntPlusHalf(0) -
-                        HpFloat(observation.preimage_size()).log() * count;
-            }
-            log_prob_ -= std::log(observation.target_cardinality());
-        } else {
-            if (info.target != target) {
-                pruned_ = true;
-                return;
-            }
-            auto old_count = info.count;
-            info.count += count;
+        auto& stat = counts_[std::move(observation)];
 
-            if constexpr (!conditional) {
-                log_prob_ += Gamma::lgammaIntPlusHalf(info.count) - Gamma::lgammaIntPlusHalf(old_count) -
-                        HpFloat(observation.preimage_size()).log() * (info.count - old_count);
-            }
+        if (stat.count > 0 && stat.target != target) {
+            pruned_ = true;
+            return;
         }
 
+        if (stat.count == 0) log_prob_ -= std::log(observation.target_cardinality());
+
+        stat.count += count;
         total_count_ += count;
+        stat.target = target;
+
+        if constexpr (!conditional) {
+            log_prob_ += Gamma::lgammaIntPlusHalf(stat.count) - Gamma::lgammaIntPlusHalf(stat.count - count) -
+                    HpFloat(observation.preimage_size()).log() * count;
+        }
 
         if (!children_.empty()) {
             auto reduced_observation = observation.ComputeReductions();
@@ -81,8 +75,8 @@ public:
         util::HpFloat result = log_prob_;
 
         if constexpr (!conditional) {
-            double d = observation.dim();
-            result += std::lgamma(d / 2) - std::lgamma(total_count_ + 1 + d / 2);
+            double m = observation.dim();
+            result += std::lgamma(m / 2) - std::lgamma(total_count_ + 1 + m / 2);
         }
 
         result = result.exp();
@@ -124,14 +118,14 @@ public:
     const Deterministic* MostProbableChild() const {}
 
 private:
-    struct OutcomeInfo {
+    struct OutcomeStat {
         unsigned long target;
         int count;
     };
 
     bool pruned_ = false;
     std::vector<Deterministic> children_;
-    std::unordered_map<Outcome, OutcomeInfo> counts_;
+    std::unordered_map<Outcome, OutcomeStat> counts_;
     util::HpFloat log_prob_ = 0.0;
     int total_count_ = 0;
 };
