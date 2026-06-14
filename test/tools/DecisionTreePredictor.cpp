@@ -36,7 +36,7 @@ void DecisionTreePredictor::ProcessEvidence() {
     mlpack::data::Load(kTrainFileName, dataset, info_, true);
     arma::Row<size_t> labels;
     mlpack::data::Load(kLabelFileName, labels, true);
-
+/*
     // Print information about the data.
     std::cout << "The data has: " << std::endl;
     std::cout << dataset << std::endl;
@@ -47,7 +47,7 @@ void DecisionTreePredictor::ProcessEvidence() {
     std::cout << " - " << labels.n_elem << " labels." << std::endl;
     std::cout << " - A maximum label of " << labels.max() << "." << std::endl;
     std::cout << " - A minimum label of " << labels.min() << "." << std::endl;
-
+*/
     tree_.Train(dataset, info_, labels, num_of_classes_); // train model.
 }
 
@@ -61,7 +61,7 @@ int DecisionTreePredictor::MostProbableOutcome(const std::vector<Datum>& query) 
     auto prediction = test_sample;
     prediction.set_target(1 + tree_.Classify(test_set.col(0)));
 
-    std::cout << "Prediction: " << prediction << std::endl;
+    //std::cout << "Prediction: " << prediction << std::endl;
 
     for (int i = 0; i < query.size(); ++i) if (query[i] == prediction) return i;
     return -1;
